@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Inventario</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body style="font-family: Arial; text-align: center; padding: 20px;">
+
+  <h2>Producto a escanear</h2>
+
+  <div id="reader" style="width:300px; margin:auto;"></div>
+<button onclick="startScanner()">📷 Iniciar cámara</button>
+<br>
+<input id="manualCode" placeholder="Código del producto">
+<button onclick="checkproduct()">Buscar</button>
+<br>
+<button onclick="getProducts()">📦 Ver inventario</button>
+  <p><strong>Resultado:</strong></p>
+  <div id="actions" style="margin-top:20px; display:none;">
+  <button onclick="addStock()">➕ Agregar</button>
+  <button onclick="removeStock()">➖ Descontar</button>
+  <br>
+  <input 
+  id="qty" 
+  type="number" 
+  placeholder="Cantidad"
+  style="margin-top:10px; padding:8px; font-size:16px; border:2px solid #007bff; border-radius:8px; background-color:#e6f0ff;"
+/>
+</div>
+  <p id="result">Aun no se ha escaneado producto</p>
+<!--hermosa libreria para el qr-->
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <script>
+    let currentProductKey = null;
+    const products = {
+  "123": { name: "Coca Cola", price: 4000, stock: 10 },
+  "456": { name: "Pan", price: 1000, stock: 25 },
+  "789": { name: "Leche", price: 3000, stock: 8 }
+};
+   //realiza el escaneo
+let scanned = false;
+
+async function onScanSuccess(decodedText) {
+  if (scanned) return;
+  scanned = true;
+
+  const cleanCode = decodedText.trim();
+
+  try {
+    const response = await fetch('http://192.168.10.29:3000/scan', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ code: cleanCode })
+    });
+
+    const data = await response.json();
+
+    if (!data.error) {
+      currentProductKey = cleanCode;
+
+      document.getElementById('result').innerText =
+        `Producto: ${data.name}
+Precio: $${data.price}
+Stock: ${data.stock}`;
+
+      document.getElementById('actions').style.display = "block";
+    } else {
+      document.getElementById('result').innerText =
+        `No encontrado: [${cleanCode}]`;
+
+      document.getElementById('actions').style.display = "none";
+    }
+
+  } catch (err) {
+    document.getElementById('result').innerText =
+      "Error conectando al backend";
+  }
+}
+async function addStock() {
+  if (!currentProductKey) return;
+
+  const input = document.getElementById("qty");
+  const qty = parseInt(input.value) || 1;
+
+  const res = await fetch('http://192.168.10.29:3000/update-stock', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      code: currentProductKey,
+      qty: qty
+    })
+  });
+
+  const data = await res.json();
+
+  input.value = "";
+
+  document.getElementById('result').innerText =
+    `Producto: ${data.name}
+Precio: $${data.price}
+Stock: ${data.stock}`;
+}
+async function removeStock() {
+  if (!currentProductKey) return;
+
+  const input = document.getElementById("qty");
+  const qty = parseInt(input.value) || 1;
+
+  const res = await fetch('http://192.168.10.29:3000/update-stock', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      code: currentProductKey,
+      qty: -qty // 👈 negativo
+    })
+  });
+
+  const data = await res.json();
+
+  input.value = "";
+
+  document.getElementById('result').innerText =
+    `Producto: ${data.name}
+Precio: $${data.price}
+Stock: ${data.stock}`;
+}
+// Función al hacer click en "Buscar"
+async function checkproduct() {
+
+  // 👇 leer valor del input (esto es lo importante)
+  const code = document.getElementById("manualCode").value;
+
+  // validar que no esté vacío
+  if (!code) return;
+
+  // 👇 petición al backend (POST porque enviamos body)
+  const res = await fetch('http://192.168.10.29:3000/checkproduct', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+
+    // 👇 SOLO enviamos el código
+    body: JSON.stringify({
+      code: code
+    })
+  });
+
+  const data = await res.json();
+
+  // 👇 manejar error
+  if (data.error) {
+    document.getElementById('result').innerText =
+      "No encontrado";
+    return;
+  }
+
+  // 👇 actualizar UI
+  document.getElementById('result').innerText =
+    `Producto: ${data.name}
+Precio: $${data.price}
+Stock: ${data.stock}`;
+}
+async function getProducts() {
+
+  const res = await fetch('http://192.168.10.29:3000/products');
+
+  const data = await res.json();
+
+  let text = "";
+
+  // recorremos productos
+  for (let key in data) {
+    const p = data[key];
+
+    text += `${p.name} - Stock: ${p.stock}\n`;
+  }
+
+  document.getElementById('result').innerText = text;
+}
+
+function updateView() {
+  const product = products[currentProductKey];
+
+  document.getElementById('result').innerText =
+    `Producto: ${product.name}
+Precio: $${product.price}
+Stock: ${product.stock}`;
+}
+const html5QrCode = new Html5Qrcode("reader");
+let scanning = false;
+
+function startScanner() {
+
+  if (scanning) return;
+
+  // pequeño delay para asegurar contexto de usuario
+  setTimeout(() => {
+
+    html5QrCode.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: 250
+      },
+      onScanSuccess
+    ).then(() => {
+      scanning = true;
+    }).catch(err => {
+      console.error("Error cámara:", err);
+
+      // fallback
+      html5QrCode.start(
+        { facingMode: "user" },
+        {
+          fps: 10,
+          qrbox: 250
+        },
+        onScanSuccess
+      ).then(() => {
+        scanning = true;
+      }).catch(err2 => {
+        console.error("Fallback falló:", err2);
+      });
+    });
+
+  }, 300);
+}
+  </script>
+
+</body>
+</html>
