@@ -50,7 +50,7 @@ async function onScanSuccess(decodedText) {
   const cleanCode = decodedText.trim();
 
   try {
-    const response = await fetch('http://192.168.10.29:3000/scan', {
+    const response = await fetch('https://inventory-backend-mwnq.onrender.com/scan', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -87,7 +87,7 @@ async function addStock() {
   const input = document.getElementById("qty");
   const qty = parseInt(input.value) || 1;
 
-  const res = await fetch('http://192.168.10.29:3000/update-stock', {
+  const res = await fetch('https://inventory-backend-mwnq.onrender.com/update-stock', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -113,7 +113,7 @@ async function removeStock() {
   const input = document.getElementById("qty");
   const qty = parseInt(input.value) || 1;
 
-  const res = await fetch('http://192.168.10.29:3000/update-stock', {
+  const res = await fetch('https://inventory-backend-mwnq.onrender.com/update-stock', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -143,7 +143,7 @@ async function checkproduct() {
   if (!code) return;
 
   // 👇 petición al backend (POST porque enviamos body)
-  const res = await fetch('http://192.168.10.29:3000/checkproduct', {
+  const res = await fetch('https://inventory-backend-mwnq.onrender.com/checkproduct', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -172,7 +172,7 @@ Stock: ${data.stock}`;
 }
 async function getProducts() {
 
-  const res = await fetch('http://192.168.10.29:3000/products');
+  const res = await fetch('https://inventory-backend-mwnq.onrender.com/products');
 
   const data = await res.json();
 

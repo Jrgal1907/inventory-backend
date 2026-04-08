@@ -61,6 +61,16 @@ app.get('/products', (req, res) => {
 
 });
 
+app.post('/scan', (req, res) => {
+  const { code } = req.body;
+
+  if (!products[code]) {
+    return res.json({ error: "No encontrado" });
+  }
+
+  res.json(products[code]);
+});
+
 // 0.0.0.0 = permite acceso desde red local (celular incluido)
 const PORT = process.env.PORT || 3000;
 
