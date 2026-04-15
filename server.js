@@ -1,3 +1,17 @@
+const mongoose = require('mongoose');
+
+// 🔥 conexión a MongoDB
+mongoose.connect('mongodb://inventoryuser:Leah1234*@ac-mw8bcpw-shard-00-00.u0zkfjq.mongodb.net:27017,ac-mw8bcpw-shard-00-01.u0zkfjq.mongodb.net:27017,ac-mw8bcpw-shard-00-02.u0zkfjq.mongodb.net:27017/Inventory?ssl=true&replicaSet=atlas-14peuo-shard-0&authSource=admin&appName=InventoryDB')
+  .then(() => console.log("✅ MongoDB conectado"))
+  .catch(err => console.log("❌ Error Mongo:", err));
+
+const Product = mongoose.model('Product', {
+  code: String,
+  name: String,
+  price: Number,
+  stock: Number
+});
+
 // Importa el framework para crear el servidor
 const express = require('express');
 
@@ -26,6 +40,28 @@ const products = {
   "456": { name: "Pan", price: 1000, stock: 25 }
 };
 
+// 🔥 Crear producto en Mongo
+app.post('/add-product', async (req, res) => {
+
+  const { code, name, price, stock } = req.body;
+
+  try {
+    const newProduct = new Product({
+      code,
+      name,
+      price,
+      stock
+    });
+
+    await newProduct.save();
+
+    res.json({ message: "Producto guardado", product: newProduct });
+
+  } catch (err) {
+    res.status(500).json({ error: "Error guardando producto" });
+  }
+
+});
 
 // 👇 ENDPOINT PRINCIPAL
 // Este endpoint recibe cambios de stock desde el frontend
