@@ -58,6 +58,7 @@ app.post('/add-product', async (req, res) => {
     res.json({ message: "Producto guardado", product: newProduct });
 
   } catch (err) {
+    console.log("🔥 ERROR REAL:", err); // 👈 CLAVE
     res.status(500).json({ error: "Error guardando producto" });
   }
 
