@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 // 🔥 conexión a MongoDB
 mongoose.connect('mongodb://inventoryuser:Leah1234%2A@ac-mw8bcpw-shard-00-00.u0zkfjq.mongodb.net:27017,ac-mw8bcpw-shard-00-01.u0zkfjq.mongodb.net:27017,ac-mw8bcpw-shard-00-02.u0zkfjq.mongodb.net:27017/Inventory?ssl=true&replicaSet=atlas-14peuo-shard-0&authSource=admin&appName=InventoryDB')
-  .then(() => console.log("✅ MongoDB conectado"))
+.then(() => console.log("✅ MongoDB conectado"))
   .catch(err => console.log("❌ Error Mongo:", err));
 
 const Product = mongoose.model('Product', {
