@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 // * → %2A (carácter especial codificado)
 // también uso la DB en minúscula (consistencia)
 mongoose.connect(
-  'mongodb://inventoryuser:Leah1234%2A@ac-mw8bcpw-shard-00-00.u0zkfjq.mongodb.net:27017,ac-mw8bcpw-shard-00-01.u0zkfjq.mongodb.net:27017,ac-mw8bcpw-shard-00-02.u0zkfjq.mongodb.net:27017/inventory?ssl=true&replicaSet=atlas-14peuo-shard-0&authSource=admin&appName=InventoryDB'
+  'mongodb://inventoryuser:Leah1234%2A@ac-mw8bcpw-shard-00-00.u0zkfjq.mongodb.net:27017,ac-mw8bcpw-shard-00-01.u0zkfjq.mongodb.net:27017,ac-mw8bcpw-shard-00-02.u0zkfjq.mongodb.net:27017/Inventory?ssl=true&replicaSet=atlas-14peuo-shard-0&authSource=admin&appName=InventoryDB'
 )
 .then(() => console.log("✅ MongoDB conectado"))
 .catch(err => console.log("❌ Error Mongo:", err));
