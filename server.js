@@ -128,7 +128,13 @@ app.get('/products', async (req, res) => {
 
 });
 
+mongoose.connection.on('connected', () => {
+  console.log('🔥 Mongoose conectado');
+});
 
+mongoose.connection.on('error', err => {
+  console.log('❌ Error conexión:', err);
+});
 
 // START SERVER
 const PORT = process.env.PORT || 3000;
