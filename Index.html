@@ -44,11 +44,6 @@
 
   <script>
     let currentProductKey = null;
-    const products = {
-  "123": { name: "Coca Cola", price: 4000, stock: 10 },
-  "456": { name: "Pan", price: 1000, stock: 25 },
-  "789": { name: "Leche", price: 3000, stock: 8 }
-};
    //realiza el escaneo
 let scanned = false;
 
@@ -182,17 +177,14 @@ Stock: ${data.stock}`;
 async function getProducts() {
 
   const res = await fetch('https://inventory-backend-mwnq.onrender.com/products');
-
   const data = await res.json();
 
   let text = "";
 
-  // recorremos productos
-  for (let key in data) {
-    const p = data[key];
-
+  // ahora es array
+  data.forEach(p => {
     text += `${p.name} - Stock: ${p.stock}\n`;
-  }
+  });
 
   document.getElementById('result').innerText = text;
 }
