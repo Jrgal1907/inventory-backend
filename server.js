@@ -3,12 +3,9 @@
 
 const mongoose = require('mongoose');
 
-// 👇 IMPORTANTE
-// * → %2A (carácter especial codificado)
-// también uso la DB en minúscula (consistencia)
-mongoose.connect(
-  'mongodb://inventoryuser:Leah1234%2A@ac-mw8bcpw-shard-00-00.u0zkfjq.mongodb.net:27017,ac-mw8bcpw-shard-00-01.u0zkfjq.mongodb.net:27017,ac-mw8bcpw-shard-00-02.u0zkfjq.mongodb.net:27017/Inventory?ssl=true&replicaSet=atlas-14peuo-shard-0&authSource=admin&appName=InventoryDB'
-)
+//variable en render
+mongoose.connect(process.env.MONGO_URI)
+
 .then(() => console.log("✅ MongoDB conectado"))
 .catch(err => console.log("❌ Error Mongo:", err));
 
@@ -43,9 +40,13 @@ app.use(express.json()); // 👈 permite leer req.body
 
 
 app.post('/add-product', async (req, res) => {
-
-  const { code, name, price, stock } = req.body;
-
+const { code, name } = req.body;
+const price = Number(req.body.price);
+const stock = Number(req.body.stock);
+// VALIDACIÓN BÁSICA
+if (!code || !name || isNaN(price) || isNaN(stock) || stock < 0) {
+  return res.status(400).json({ error: "Datos inválidos" });
+}
   try {
     const newProduct = new Product({
       code,
@@ -62,6 +63,7 @@ app.post('/add-product', async (req, res) => {
     console.log("🔥 ERROR REAL:", err);
     res.status(500).json({ error: "Error guardando producto" });
   }
+  
 
 });
 
