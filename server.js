@@ -15,12 +15,11 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 const Product = mongoose.model('Product', {
-  code: String,
+  code: { type: String, unique: true },
   name: String,
   price: Number,
   stock: Number
 });
-
 
 
 //  EXPRESS SERVER
@@ -61,7 +60,11 @@ if (!code || !name || isNaN(price) || isNaN(stock) || stock < 0) {
 
   } catch (err) {
     console.log("🔥 ERROR REAL:", err);
-    res.status(500).json({ error: "Error guardando producto" });
+    if (err.code === 11000) {
+  return res.status(400).json({ error: "Producto ya existe" });
+}
+
+res.status(500).json({ error: "Error guardando producto" });;
   }
   
 
