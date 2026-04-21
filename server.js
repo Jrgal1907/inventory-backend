@@ -92,28 +92,38 @@ app.post('/scan', async (req, res) => {
 //  ACTUALIZAR STOCK
 
 app.post('/update-stock', async (req, res) => {
-
   const { code, qty } = req.body;
+
+  if (!code || isNaN(qty)) {
+    return res.status(400).json({ error: "Datos inválidos" });
+  }
 
   try {
     const product = await Product.findOne({ code });
 
     if (!product) {
-      return res.json({ error: "No encontrado" });
+      return res.status(404).json({ error: "No encontrado" });
     }
 
-    product.stock += qty;
+    const newStock = product.stock + qty;
 
+    // 🚫 BLOQUEO CLAVE
+    if (newStock < 0) {
+      return res.status(400).json({
+        error: "Stock insuficiente"
+      });
+    }
+
+    product.stock = newStock;
     await product.save();
 
     res.json(product);
 
   } catch (err) {
+    console.log("🔥 ERROR:", err);
     res.status(500).json({ error: "Error actualizando stock" });
   }
-
 });
-
 
 // VER TODOS LOS PROD
 
