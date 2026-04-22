@@ -66,7 +66,7 @@
 <script>
 let currentProductKey = null;
 let scanned = false;
-let laststock=null; // ultimo stock antes de update
+let lastStock=null; // ultimo stock antes de update
 
 /* procesamiento del QR */
 async function onScanSuccess(decodedText) {
@@ -98,9 +98,9 @@ async function onScanSuccess(decodedText) {
       document.getElementById('actions').style.display = "none";
       return;
     }
-
+    lastStock = data.stock;
     currentProductKey = cleanCode;
-    laststock=data.stock; // stock inicial
+    lastStock=data.stock; // stock inicial
 
     document.getElementById('result').innerText =
       `Producto: ${data.name}
@@ -123,46 +123,61 @@ async function addStock() {
 
   document.getElementById('result').innerText = "Cargando...";
 
+try {
+  const res = await fetch('https://inventory-backend-mwnq.onrender.com/update-stock', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      code: currentProductKey,
+      qty: qty
+    })
+  });
+
+  if (!res.ok) {
+    document.getElementById('result').innerText =
+      "Error del servidor";
+    return;
+  }
+
+  let data;
+
   try {
-    const res = await fetch('https://inventory-backend-mwnq.onrender.com/update-stock', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        code: currentProductKey,
-        qty: qty
-      })
-    });
+    data = await res.json();
+  } catch {
+    document.getElementById('result').innerText =
+      "Respuesta inválida del servidor";
+    return;
+  }
 
-    const data = await res.json();
+  if (data.error) {
+    document.getElementById('result').innerText = data.error;
+    return;
+  }
 
-    if (data.error) {
-      document.getElementById('result').innerText = data.error;
-      return;
-    }
+  input.value = "";
 
-    input.value = "";
-
-const previous = lastStock;
+const previous = lastStock ?? data.stock;
 const current = data.stock;
 const diff = current - previous;
 
-document.getElementById('result').innerText =
-  `Actualizado
+  document.getElementById('result').innerText =
+    `Actualizado
 
 Producto: ${data.name}
 Precio: $${data.price}
 
 Stock anterior: ${previous}
-Cambio: +${diff}
+Cambio: ${diff > 0 ? '+' : ''}${diff}
 Stock actual: ${current}`;
 
-lastStock = current;
+  lastStock = current;
 
-  } catch {
-    document.getElementById('result').innerText = "Error conectando al backend";
-  }
+} catch (err) {
+  console.error("ERROR REAL:", err);
+  document.getElementById('result').innerText =
+    "Error conectando al backend";
 }
-
+}
 /* quitar stock */
 async function removeStock() {
   if (!currentProductKey) return;
@@ -173,45 +188,60 @@ async function removeStock() {
   document.getElementById('result').innerText = "Cargando...";
 
   try {
-    const res = await fetch('https://inventory-backend-mwnq.onrender.com/update-stock', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        code: currentProductKey,
-        qty: -qty
-      })
-    });
+  const res = await fetch('https://inventory-backend-mwnq.onrender.com/update-stock', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      code: currentProductKey,
+      qty: -qty
+    })
+  });
 
-    const data = await res.json();
+  if (!res.ok) {
+    document.getElementById('result').innerText =
+      "Error del servidor";
+    return;
+  }
 
-    if (data.error) {
-      document.getElementById('result').innerText = data.error;
-      return;
-    }
+  let data;
 
-    input.value = "";
+  try {
+    data = await res.json();
+  } catch {
+    document.getElementById('result').innerText =
+      "Respuesta inválida del servidor";
+    return;
+  }
 
-const previous = lastStock;
+  if (data.error) {
+    document.getElementById('result').innerText = data.error;
+    return;
+  }
+
+  input.value = "";
+
+const previous = lastStock ?? data.stock;
 const current = data.stock;
 const diff = current - previous;
 
-document.getElementById('result').innerText =
-  `Actualizado
+  document.getElementById('result').innerText =
+    `Actualizado
 
 Producto: ${data.name}
 Precio: $${data.price}
 
 Stock anterior: ${previous}
-Cambio: ${diff}
+Cambio: ${diff > 0 ? '+' : ''}${diff}
 Stock actual: ${current}`;
 
-lastStock = current;
+  lastStock = current;
 
-  } catch {
-    document.getElementById('result').innerText = "Error conectando al backend";
-  }
+} catch (err) {
+  console.error("ERROR REAL:", err);
+  document.getElementById('result').innerText =
+    "Error conectando al backend";
 }
-
+}
 /* búsqueda manual */
 async function checkproduct() {
   let code = document.getElementById("manualCode").value;
@@ -241,7 +271,7 @@ async function checkproduct() {
     }
 
     currentProductKey = code;
-    laststock=data.stock;
+    lastStock=data.stock;
 
     document.getElementById('result').innerText =
       `Producto: ${data.name}

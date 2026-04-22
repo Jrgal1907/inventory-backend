@@ -93,6 +93,33 @@ app.post('/scan', async (req, res) => {
 
 });
 
+// EDITAR PRODUCTO
+app.put('/update-product', async (req, res) => {
+  const { code, name, price } = req.body;
+
+  if (!code || !name || isNaN(price)) {
+    return res.status(400).json({ error: "Datos inválidos" });
+  }
+
+  try {
+    const product = await Product.findOne({ code });
+
+    if (!product) {
+      return res.status(404).json({ error: "No encontrado" });
+    }
+
+    product.name = name;
+    product.price = Number(price);
+
+    await product.save();
+
+    res.json(product);
+
+  } catch (err) {
+    console.log("🔥 ERROR:", err);
+    res.status(500).json({ error: "Error actualizando producto" });
+  }
+});
 
 //  ACTUALIZAR STOCK
 
