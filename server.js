@@ -150,6 +150,22 @@ mongoose.connection.on('error', err => {
   console.log('❌ Error conexión:', err);
 });
 
+//SEARCH BASED ON LIKE 
+app.post('/search', async (req, res) => {
+  const { name } = req.body;
+  try {
+    const products = await Product.find({ 
+      name: { $regex: name, $options: 'i' }
+    });
+    if (products.length === 0) {
+      return res.json({ error: "No encontrado" });
+    }
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ error: "Error buscando producto" });
+  }
+});
+
 // START SERVER
 const PORT = process.env.PORT || 3000;
 
