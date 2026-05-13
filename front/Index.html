@@ -160,7 +160,38 @@ function generarQR(code) {
   document.getElementById('result').innerHTML +=
     `<div id="qr-container" style="margin-top:16px;"><img src="${url}" alt="QR ${code}"><br><small>${code}</small></div>`;
 }
+//login transaction
+async function login() {
+  const username = document.getElementById('inputUser').value.trim();
+  const password = document.getElementById('inputPass').value.trim();
+  const msg      = document.getElementById('msgLogin');
 
+  if (!username || !password) {
+    msg.style.color = 'red';
+    msg.innerText   = 'Usuario y contraseña son obligatorios';
+    return;
+  }
+
+  msg.style.color = 'gray';
+  msg.innerText   = 'Ingresando...';
+
+  try {
+    const data = await postData(`${API}/login`, { username, password });
+
+    if (data.error) {
+      msg.style.color = 'red';
+      msg.innerText   = data.error;
+      return;
+    }
+
+    sessionStorage.setItem('clientId', data.clientId);
+    mostrarPantalla('pantalla-principal');
+
+  } catch {
+    msg.style.color = 'red';
+    msg.innerText   = 'Error conectando al backend';
+  }
+}
 // ── Generic POST helper ──
 async function postData(url, body) {
   try {

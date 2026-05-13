@@ -70,9 +70,34 @@ res.status(500).json({ error: "Error guardando producto" });;
 
 });
 
+//login users
+const User = mongoose.model('User', {
+  username: { type: String, unique: true },
+  password: String,
+  clientId: String
+});
+// user endpoint
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
 
+  if (!username || !password) {
+    return res.status(400).json({ error: "Datos inválidos" });
+  }
+
+  try {
+    const user = await User.findOne({ username, password });
+
+    if (!user) {
+      return res.status(401).json({ error: "Usuario o contraseña incorrectos" });
+    }
+
+    res.json({ clientId: user.clientId, username: user.username });
+
+  } catch (err) {
+    res.status(500).json({ error: "Error en el servidor" });
+  }
+});
 // BUSCAR PRODUCTO
-
 
 app.post('/scan', async (req, res) => {
 
