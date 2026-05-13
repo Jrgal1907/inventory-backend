@@ -48,12 +48,24 @@
 
 <body>
 <div id="bg"></div>
-
+<!-- ── SCREEN 0: Login ── -->
+<div id="pantalla-login">
+  <br><br>
+  <h2>AG Inventory</h2>
+  <br>
+  <input id="inputUser" type="text" placeholder="Usuario"><br><br>
+  <input id="inputPass" type="password" placeholder="Contraseña"><br><br>
+  <button onclick="login()">Ingresar</button>
+  <p id="msgLogin"></p>
+  <br><br>
+  <p style="font-size:11px; color:#aaa;">Powered by AG Inventory</p>
+</div>
 <!-- ── SCREEN 1: Main ── -->
 <div id="pantalla-principal">
   <h2>Producto a escanear</h2>
   <div id="reader" style="width:300px; margin:auto;"></div>
   <button onclick="startScanner()">📷 Iniciar Scanner</button>
+  <button onclick="stopScanner()">⏹️ Detener Scanner</button>
   <br><br>
   <input id="manualCode" placeholder="Prod a buscar...">
   <button onclick="checkproduct()">Buscar</button>
@@ -70,7 +82,8 @@
       type="number"
       placeholder="Cantidad"
       style="margin-top:10px; padding:8px; font-size:16px; border:2px solid #007bff; border-radius:8px; background-color:#e6f0ff;"
-    />
+      <p style="font-size:11px; color:#aaa; margin-top:32px;">Powered by AG Inventory</p>    
+      />
   </div>
 </div>
 <!-- ── SCREEN 2: Inventory list ── -->
@@ -89,6 +102,7 @@
     <input id="inputStock"  type="number" placeholder="Stock inicial">
     <button onclick="guardarProducto()">💾 Guardar</button>
     <p id="msgFormulario"></p>
+    <div id="qr-nuevo" stlye="text-align:center;"></div>
   </div>
 </div>
 
@@ -104,7 +118,7 @@ let lastStock         = null;
 
 // ── Show one screen, hide all others ──
 function mostrarPantalla(id) {
-  ['pantalla-principal', 'pantalla-inventario', 'pantalla-agregar']
+  ['pantalla-login','pantalla-principal', 'pantalla-inventario', 'pantalla-agregar']
     .forEach(p => document.getElementById(p).style.display = 'none');
   document.getElementById(id).style.display = 'block';
 }
@@ -262,6 +276,9 @@ async function addStock(isadding) {
 
 // ── Manual code search ──
 async function checkproduct() {
+  document.getElementById('actions').style.display = 'none';
+  currentProductKey = null;
+  lastStock = null;
   let name = document.getElementById('manualCode').value.trim();
 
   if (!name) {
@@ -416,6 +433,9 @@ async function guardarProducto() {
 
     msg.style.color = 'green';
     msg.innerText   = `✅ "${name}" guardado`;
+    const url = `https://api.qrserver.com/v1/create-qr-code/?data=${code}&size=200x200`;
+    document.getElementById('qr-nuevo').innerHTML =
+    `<br><img src="${url}" alt="QR ${code}"><br><small>${code}</small>`;
 
     // Clear fields and bump code for next product
     document.getElementById('inputNombre').value = '';
@@ -454,6 +474,13 @@ function startScanner() {
     });
   }, 300);
 }
+function stopScanner() {
+  if (!scanning) return;
+  html5QrCode.stop().then(() => {
+    scanning = false;
+  });
+}
+mostrarPantalla('pantalla-login');
 </script>
 
 </body>
