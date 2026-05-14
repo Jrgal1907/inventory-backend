@@ -179,7 +179,7 @@
     </div>
     <p style="font-size:11px; color:#aaa; margin-top:32px;">Powered by AG Inventory</p>
     <br><br>
-<button onclick="cerrarSesion()" style="font-size:11px; background:none; border:none; color:#aaa; cursor:pointer; text-decoration:underline;">Cerrar sesión</button>
+<button onclick="cerrarSesion()" style="font-size:11px; background:none; border:none; color:#125; cursor:pointer; text-decoration:underline;">Cerrar sesión</button>
 </div>
 <!-- ── SCREEN 2: Inventory list ── -->
 <div id="pantalla-inventario" style="display:none;">
@@ -204,6 +204,11 @@
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <script>
+/*clientId filter*/
+function getClientId() {
+  return sessionStorage.getItem('clientId');
+}
+/*scanner*/
 const API           = 'https://inventory-backend-mwnq.onrender.com';
 const SCAN_COOLDOWN = 1500;
 
@@ -329,7 +334,7 @@ async function fetchProduct(code) {
     '<span style="color:gray">Buscando producto...</span>';
 
   try {
-    const data = await postData(`${API}/scan`, { code });
+    const data = await postData(`${API}/scan`, { code, clientId:getClientId() });
 
     if (data.error) {
       document.getElementById('result').innerText = 'No encontrado';
@@ -420,7 +425,7 @@ async function checkproduct() {
     '<span style="color:gray">Buscando...</span>';
 
   try {
-    const data = await postData(`${API}/search`, { name });
+    const data = await postData(`${API}/search`, { name , clientId:getClientId() });
 
     if (data.error) {
       document.getElementById('result').innerText = 'No encontrado';
@@ -463,7 +468,7 @@ async function getProducts() {
     '<span style="color:gray">Cargando inventario...</span>';
 
   try {
-    const data = await getData(`${API}/products`);
+    const data = await getData(`${API}/products?clientId=${getClientId()}`);
 
     let html = `
       <div style="max-width:400px; margin:auto; text-align:left;">
@@ -510,7 +515,7 @@ async function abrirAgregar() {
   document.getElementById('msgFormulario').innerText = '';
 
   try {
-    const products = await getData(`${API}/products`);
+    const products = await getData(`${API}/products?clientId=${clientId()}`);
     const codes    = products.map(p => Number(p.code)).filter(n => !isNaN(n));
     const nextCode = codes.length > 0 ? Math.max(...codes) + 1 : 100;
     document.getElementById('inputCodigo').value = nextCode;
