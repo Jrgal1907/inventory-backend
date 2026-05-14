@@ -15,6 +15,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 
 const Product = mongoose.model('Product', {
+  clientId: String,
   code: { type: String, unique: true },
   name: String,
   price: Number,
@@ -36,9 +37,8 @@ app.use(express.json()); // 👈 permite leer req.body
 
 
 // CREAR PRODUCTO
-
-
 app.post('/add-product', async (req, res) => {
+const {clientId} = req.body;
 const { code, name } = req.body;
 const price = Number(req.body.price);
 const stock = Number(req.body.stock);
@@ -51,7 +51,8 @@ if (!code || !name || isNaN(price) || isNaN(stock) || stock < 0) {
       code,
       name,
       price,
-      stock
+      stock,
+	  clientId
     });
 
     await newProduct.save();
@@ -66,8 +67,6 @@ if (!code || !name || isNaN(price) || isNaN(stock) || stock < 0) {
 
 res.status(500).json({ error: "Error guardando producto" });;
   }
-  
-
 });
 
 //login users
@@ -98,13 +97,12 @@ app.post('/login', async (req, res) => {
   }
 });
 // BUSCAR PRODUCTO
-
 app.post('/scan', async (req, res) => {
 
-  const { code } = req.body;
+  const { clientId, code } = req.body;
 
   try {
-    const product = await Product.findOne({ code });
+    const product = await Product.findOne({ clientId,code });
 
     if (!product) {
       return res.json({ error: "No encontrado" });
@@ -119,16 +117,15 @@ app.post('/scan', async (req, res) => {
 });
 
 //  ACTUALIZAR STOCK
-
 app.post('/update-stock', async (req, res) => {
-  const { code, qty } = req.body;
+  const { clientId,code, qty } = req.body;
 
   if (!code || isNaN(qty)) {
     return res.status(400).json({ error: "Datos inválidos" });
   }
 
   try {
-    const product = await Product.findOne({ code });
+    const product = await Product.findOne({ clientId, code });
 
     if (!product) {
       return res.status(404).json({ error: "No encontrado" });
@@ -157,14 +154,13 @@ app.post('/update-stock', async (req, res) => {
 // VER TODOS LOS PROD
 
 app.get('/products', async (req, res) => {
-
+  const { clientId } = req.query;
   try {
-    const products = await Product.find();
+    const products = await Product.find({ clientId });
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: "Error obteniendo productos" });
   }
-
 });
 
 mongoose.connection.on('connected', () => {
@@ -177,10 +173,10 @@ mongoose.connection.on('error', err => {
 
 //SEARCH BASED ON LIKE 
 app.post('/search', async (req, res) => {
-  const { name } = req.body;
+  const { clientId,name } = req.body;
   try {
-    const products = await Product.find({ 
-      name: { $regex: name, $options: 'i' }
+    const products = await Product.find({ clientId,
+      name: {$regex: name, $options: 'i' }
     });
     if (products.length === 0) {
       return res.json({ error: "No encontrado" });
