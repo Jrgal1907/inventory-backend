@@ -73,7 +73,8 @@ res.status(500).json({ error: "Error guardando producto" });;
 const User = mongoose.model('User', {
   username: { type: String, unique: true },
   password: String,
-  clientId: String
+  clientId: String,
+  logoURL: String
 });
 // user endpoint
 app.post('/login', async (req, res) => {
@@ -90,7 +91,7 @@ app.post('/login', async (req, res) => {
       return res.status(401).json({ error: "Usuario o contraseña incorrectos" });
     }
 
-    res.json({ clientId: user.clientId, username: user.username });
+    res.json({ clientId: user.clientId, username: user.username, logoUrl: user.logoUrl });
 
   } catch (err) {
     res.status(500).json({ error: "Error en el servidor" });

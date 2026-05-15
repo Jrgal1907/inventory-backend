@@ -285,8 +285,13 @@ async function login() {
     }
 
     sessionStorage.setItem('clientId', data.clientId);
-    document.getElementById('bg').style.display = 'block';
-    mostrarPantalla('pantalla-principal');
+    sessionStorage.setItem('logoUrl', data.logoUrl);
+   if (data.logoUrl) {
+  document.getElementById('bg').style.backgroundImage = `url('${data.logoUrl}')`;
+}
+
+document.getElementById('bg').style.display = 'block';
+mostrarPantalla('pantalla-principal');
 
   } catch {
     msg.style.color = 'red';
