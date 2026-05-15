@@ -74,7 +74,7 @@ const User = mongoose.model('User', {
   username: { type: String, unique: true },
   password: String,
   clientId: String,
-  logoURL: String
+  logoUrl: String
 });
 // user endpoint
 app.post('/login', async (req, res) => {
