@@ -9,22 +9,21 @@ mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("✅ MongoDB conectado"))
 .catch(err => console.log("❌ Error Mongo:", err));
 
+//Product Table 
 
-
-// TABLA
-
-
-const Product = mongoose.model('Product', {
+const ProductSchema = new mongoose.Schema({
   clientId: String,
-  code: { type: String, unique: true },
+  code: String,
   name: String,
   price: Number,
   stock: Number
 });
 
+ProductSchema.index({ clientId: 1, code: 1 }, { unique: true });
+
+const Product = mongoose.model('Product', ProductSchema);
 
 //  EXPRESS SERVER
-
 
 const express = require('express');
 const cors = require('cors');
