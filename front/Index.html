@@ -323,7 +323,7 @@ async function getData(url) {
 
 // ── Stock update via API ──
 async function updateStockAPI(code, qty) {
-  return await postData(`${API}/update-stock`, { code, qty });
+  return await postData(`${API}/update-stock`, { code, qty, clientId:getClientId() });
 }
 
 // ── Fetch single product and navigate to detail screen ──
@@ -515,7 +515,7 @@ async function abrirAgregar() {
   document.getElementById('msgFormulario').innerText = '';
 
   try {
-    const products = await getData(`${API}/products?clientId=${clientId()}`);
+    const products = await getData(`${API}/products?clientId=${getClientId()}`);
     const codes    = products.map(p => Number(p.code)).filter(n => !isNaN(n));
     const nextCode = codes.length > 0 ? Math.max(...codes) + 1 : 100;
     document.getElementById('inputCodigo').value = nextCode;
@@ -551,12 +551,12 @@ async function guardarProducto() {
 
   try {
     const data = await postData(`${API}/add-product`, {
-      code,
-      name,
-      price: Number(price),
-      stock: Number(stock)
-    });
-
+  code,
+  name,
+  price: Number(price),
+  stock: Number(stock),
+  clientId: getClientId()
+});
     if (data.error) {
       msg.style.color = 'red';
       msg.innerText   = data.error;
