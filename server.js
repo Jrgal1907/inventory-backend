@@ -2,6 +2,7 @@
 // MONGODB CONNECTION
 
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 //variable en render
 mongoose.connect(process.env.MONGO_URI)
