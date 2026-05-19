@@ -84,12 +84,11 @@ app.post('/login', async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ username, password });
+   const user = await User.findOne({ username });
 
-    if (!user) {
-      return res.status(401).json({ error: "Usuario o contraseña incorrectos" });
-    }
-
+if (!user || !(await bcrypt.compare(password, user.password))) {
+  return res.status(401).json({ error: "Usuario o contraseña incorrectos" });
+}
     res.json({ clientId: user.clientId, username: user.username, logoUrl: user.logoUrl });
 
   } catch (err) {

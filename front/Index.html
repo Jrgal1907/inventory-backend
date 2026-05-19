@@ -622,6 +622,25 @@ mostrarPantalla('pantalla-login');
 /*log out*/
 function cerrarSesion() {
   sessionStorage.removeItem('clientId');
+  sessionStorage.removeItem('logoUrl');
+  
+  // Reset app state
+  currentProductKey = null;
+  lastStock = null;
+  scanned = false;
+  
+  // Stop scanner if running
+  if (scanning) {
+    html5QrCode.stop().then(() => { scanning = false; });
+  }
+  
+  // Clear all screens
+  document.getElementById('result').innerText = '';
+  document.getElementById('actions').style.display = 'none';
+  document.getElementById('lista-inventario').innerHTML = '';
+  document.getElementById('bg').style.display = 'none';
+  document.getElementById('bg').style.backgroundImage = '';
+  
   mostrarPantalla('pantalla-login');
 }
 </script>
