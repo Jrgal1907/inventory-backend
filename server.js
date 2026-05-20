@@ -12,12 +12,14 @@ mongoose.connect(process.env.MONGO_URI)
 
 //Product Table 
 
-const ProductSchema = new mongoose.Schema({
+const User = mongoose.model('User', {
+  username: { type: String, unique: true },
+  password: String,
   clientId: String,
-  code: String,
-  name: String,
-  price: Number,
-  stock: Number
+  logoUrl: String,
+  features: {
+    remisiones: { type: Boolean, default: false }
+  }
 });
 
 ProductSchema.index({ clientId: 1, code: 1 }, { unique: true });
@@ -90,7 +92,7 @@ app.post('/login', async (req, res) => {
 if (!user || !(await bcrypt.compare(password, user.password))) {
   return res.status(401).json({ error: "Usuario o contraseña incorrectos" });
 }
-    res.json({ clientId: user.clientId, username: user.username, logoUrl: user.logoUrl });
+    res.json({ clientId: user.clientId, username: user.username, logoUrl: user.logoUrl, features: user.features });
 
   } catch (err) {
     res.status(500).json({ error: "Error en el servidor" });
