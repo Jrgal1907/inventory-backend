@@ -1,31 +1,32 @@
-
 // MONGODB CONNECTION
-
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt   = require('bcrypt');
 
-//variable en render
 mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB conectado"))
+  .catch(err => console.log("❌ Error Mongo:", err));
 
-.then(() => console.log("✅ MongoDB conectado"))
-.catch(err => console.log("❌ Error Mongo:", err));
+// Product schema with unique index per client
+const ProductSchema = new mongoose.Schema({
+  clientId: String,
+  code:     String,
+  name:     String,
+  price:    Number,
+  stock:    Number
+});
+ProductSchema.index({ clientId: 1, code: 1 }, { unique: true });
+const Product = mongoose.model('Product', ProductSchema);
 
-//Product Table 
-
+// User schema with features
 const User = mongoose.model('User', {
   username: { type: String, unique: true },
   password: String,
   clientId: String,
-  logoUrl: String,
+  logoUrl:  String,
   features: {
     remisiones: { type: Boolean, default: false }
   }
 });
-
-ProductSchema.index({ clientId: 1, code: 1 }, { unique: true });
-
-const Product = mongoose.model('Product', ProductSchema);
-
 //  EXPRESS SERVER
 
 const express = require('express');
