@@ -71,14 +71,6 @@ if (!code || !name || isNaN(price) || isNaN(stock) || stock < 0) {
 res.status(500).json({ error: "Error guardando producto" });;
   }
 });
-
-//login users
-const User = mongoose.model('User', {
-  username: { type: String, unique: true },
-  password: String,
-  clientId: String,
-  logoUrl: String
-});
 // user endpoint
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
