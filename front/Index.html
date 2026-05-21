@@ -146,8 +146,8 @@
     <p class="login-brand">AG Inventory</p>
     <p class="login-sub">Facilitador de inventario</p>
     <p style="font-family: 'DM Sans', sans-serif; font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(232,220,200,0.2); margin: 0 0 32px;">beta version</p>
-    <input class="login-input" id="inputUser" type="text" placeholder="Usuario">
-    <input class="login-input" id="inputPass" type="password" placeholder="Contraseña">
+<input class="login-input" id="inputUser" type="text" placeholder="Usuario" autocomplete="off">
+<input class="login-input" id="inputPass" type="password" placeholder="Contraseña" autocomplete="off">
     <button class="login-btn" onclick="login()">Ingresar</button>
     <p id="msgLogin"></p>
     <p class="login-powered">Powered by AGalvis</p>
@@ -165,6 +165,8 @@
   <br><br>
   <button onclick="getProducts()">📦 Ver inventario</button>
   <button onclick="abrirAgregar()">➕ Agregar producto</button>
+  <br><br>
+  <button id="btnRemision" onclick="abrirRemision()">📋 Nueva remisión</button>
     <p id="result"></p>
   <div id="actions" style="margin-top:20px; display:none;">
     <button onclick="addStock(true)">➕ Agregar</button>
@@ -186,7 +188,7 @@
   <button onclick="mostrarPantalla('pantalla-principal')" style="margin-bottom:16px;">← Volver</button>
   <div id="lista-inventario"></div>
 </div>
-<!-- ── SCREEN 4: Add product ── -->
+<!-- ── SCREEN 3: Add product ── -->
 <div id="pantalla-agregar" style="display:none;">
   <button onclick="mostrarPantalla('pantalla-principal')" style="margin-bottom:16px;">← Volver</button>
   <div id="formAgregar" style="max-width:340px; margin:0 auto; text-align:left; background:#f9f9f9; border:1px solid #ddd; border-radius:12px; padding:16px;">
@@ -199,6 +201,16 @@
     <p id="msgFormulario"></p>
     <div id="qr-nuevo" stlye="text-align:center;"></div>
   </div>
+</div>
+<!-- ── SCREEN 4: Remision ── -->
+<div id="pantalla-remision" style="display:none;">
+  <button onclick="mostrarPantalla('pantalla-principal')" style="margin-bottom:16px;">← Volver</button>
+  <h3>Nueva remisión</h3>
+  <div id="lista-remision"></div>
+  <div id="carrito" style="margin-top:16px;"></div>
+  <div id="btn-generar" style="display:none; text-align:center; margin-top:16px;">
+  <button onclick="generarRemision()">📄 Generar remisión</button>
+</div>
 </div>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
@@ -215,10 +227,11 @@ const SCAN_COOLDOWN = 1500;
 let currentProductKey = null;
 let scanned           = false;
 let lastStock         = null;
+let carrito           = {};
 
 // ── Show one screen, hide all others ──
 function mostrarPantalla(id) {
-  ['pantalla-login','pantalla-principal', 'pantalla-inventario', 'pantalla-agregar']
+  ['pantalla-login','pantalla-principal', 'pantalla-inventario', 'pantalla-agregar','pantalla-remision']
     .forEach(p => document.getElementById(p).style.display = 'none');
   document.getElementById(id).style.display = 'block';
 }
@@ -260,6 +273,15 @@ function generarQR(code) {
   document.getElementById('result').innerHTML +=
     `<div id="qr-container" style="margin-top:16px;"><img src="${url}" alt="QR ${code}"><br><small>${code}</small></div>`;
 }
+//features
+function getFeatures() {
+  return JSON.parse(sessionStorage.getItem('features') || '{}');
+}
+// ── Apply feature flags to UI ──
+function aplicarFlags(features) {
+  document.getElementById('btnRemision').style.display = 
+    features.remisiones ? 'inline-block' : 'none';
+}
 //login transaction
 async function login() {
   const username = document.getElementById('inputUser').value.trim();
@@ -289,11 +311,13 @@ async function login() {
    if (data.logoUrl) {
   document.getElementById('bg').style.backgroundImage = `url('${data.logoUrl}')`;
 }
+    sessionStorage.setItem('features', JSON.stringify(data.features));
 
 document.getElementById('bg').style.display = 'block';
 mostrarPantalla('pantalla-principal');
-
-  } catch {
+aplicarFlags(data.features || {});
+  }
+   catch {
     msg.style.color = 'red';
     msg.innerText   = 'Error conectando al backend';
   }
@@ -619,6 +643,81 @@ function stopScanner() {
 }
 document.getElementById('bg').style.display = 'none';
 mostrarPantalla('pantalla-login');
+/*remision feature*/
+// ── Open remision screen and load products ──
+async function abrirRemision() {
+  mostrarPantalla('pantalla-remision');
+  document.getElementById('carrito').innerHTML = '';
+  document.getElementById('btn-generar').style.display = 'none';
+
+  try {
+    const products = await getData(`${API}/products?clientId=${getClientId()}`);
+
+    let html = `<div style="max-width:400px; margin:auto; text-align:left;">`;
+    products
+      .sort((a, b) => a.code.localeCompare(b.code))
+      .forEach(p => {
+        html += `
+          <div onclick="agregarAlCarrito('${p.code}', '${p.name}', ${p.price}, ${p.stock})"
+               id="item-${p.code}"
+               style="display:flex; justify-content:space-between; align-items:center;
+                      padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
+            <div>
+              <div style="font-weight:600;">${p.name}</div>
+              <div style="font-size:12px; color:#777;">${p.code}</div>
+            </div>
+            <div style="font-size:12px; color:#333;">Stock: ${p.stock}</div>
+          </div>
+        `;
+      });
+    html += `</div>`;
+    document.getElementById('lista-remision').innerHTML = html;
+
+  } catch {
+    document.getElementById('lista-remision').innerText = 'Error cargando productos';
+  }
+}
+// ── Add product to remision cart ──
+function agregarAlCarrito(code, name, price, stock) {
+  if (carrito[code]) {
+    // Already in cart — remove it
+    delete carrito[code];
+    document.getElementById(`item-${code}`).style.background = '';
+  } else {
+    // Add to cart
+    carrito[code] = { name, price, stock, qty: 1 };
+    document.getElementById(`item-${code}`).style.background = '#e6f0ff';
+  }
+  renderCarrito();
+}
+// ── Render cart with quantity inputs ──
+function renderCarrito() {
+  const items = Object.entries(carrito);
+  
+  if (items.length === 0) {
+    document.getElementById('carrito').innerHTML = '';
+    document.getElementById('btn-generar').style.display = 'none';
+    return;
+  }
+
+  let html = `<div style="max-width:400px; margin:auto; text-align:left; border-top:2px solid #007bff; padding-top:12px;">
+    <h4 style="text-align:center;">Productos seleccionados</h4>`;
+
+  items.forEach(([code, item]) => {
+    html += `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee;">
+        <div style="font-size:13px; font-weight:600;">${item.name}</div>
+        <input type="number" min="1" max="${item.stock}" value="${item.qty}"
+               onchange="carrito['${code}'].qty = parseInt(this.value) || 1"
+               style="width:60px; padding:4px; border:1px solid #007bff; border-radius:6px; text-align:center;">
+      </div>
+    `;
+  });
+
+  html += `</div>`;
+  document.getElementById('carrito').innerHTML = html;
+  document.getElementById('btn-generar').style.display = 'block';
+}
 /*log out*/
 function cerrarSesion() {
   sessionStorage.removeItem('clientId');
@@ -627,8 +726,7 @@ function cerrarSesion() {
   // Reset app state
   currentProductKey = null;
   lastStock = null;
-  scanned = false;
-  
+  scanned = false; 
   // Stop scanner if running
   if (scanning) {
     html5QrCode.stop().then(() => { scanning = false; });
