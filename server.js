@@ -37,15 +37,13 @@ const app = express();
 app.use(cors());         // 👈 permite frontend (Netlify)
 app.use(express.json()); // 👈 permite leer req.body
 
-
-
-// CREAR PRODUCTO
+// Producto creation
 app.post('/add-product', async (req, res) => {
 const {clientId} = req.body;
 const { code, name } = req.body;
 const price = Number(req.body.price);
 const stock = Number(req.body.stock);
-// VALIDACIÓN BÁSICA
+// Basic Validation
 if (!code || !name || isNaN(price) || isNaN(stock) || stock < 0) {
   return res.status(400).json({ error: "Datos inválidos" });
 }
@@ -111,7 +109,7 @@ app.post('/scan', async (req, res) => {
 
 });
 
-//  ACTUALIZAR STOCK
+//  Update Stock
 app.post('/update-stock', async (req, res) => {
   const { clientId,code, qty } = req.body;
 
@@ -181,7 +179,43 @@ app.post('/search', async (req, res) => {
     res.status(500).json({ error: "Error buscando producto" });
   }
 });
+//Delivery note history
+const DeliveryNote = mongoose.model('DeliveryNote', {
+  clientId:    String,
+  date:        { type: Date, default: Date.now },
+  recipient:   String,
+  address:     String,
+  items: [{
+    code:     String,
+    name:     String,
+    qty:      Number,
+    price:    Number,
+    subtotal: Number
+  }],
+  total: Number
+});
+//delivery note endpoint
+app.post('/delivery-notes', async (req, res) => {
+  const { clientId, recipient, address, items, total } = req.body;
 
+  try {
+    const note = new DeliveryNote({ clientId, recipient, address, items, total });
+    await note.save();
+    res.json({ message: 'Remisión guardada', note });
+  } catch (err) {
+    res.status(500).json({ error: 'Error guardando remisión' });
+  }
+});
+
+app.get('/delivery-notes', async (req, res) => {
+  const { clientId } = req.query;
+  try {
+    const notes = await DeliveryNote.find({ clientId }).sort({ date: -1 });
+    res.json(notes);
+  } catch (err) {
+    res.status(500).json({ error: 'Error obteniendo remisiones' });
+  }
+});
 // START SERVER
 const PORT = process.env.PORT || 3000;
 

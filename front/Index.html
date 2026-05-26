@@ -3,171 +3,40 @@
 <head>
   <title>Inventario</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
 </head>
-
-<style>
-  /*login style*/
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400&display=swap');
-
-#pantalla-login {  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: #4a5568;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-}
-
-.login-card {
-  background: #3d4452;
-  border-radius: 12px;
-  border: 0.5px solid rgba(255,255,255,0.08);
-  padding: 48px 40px 36px;
-  width: 100%;
-  max-width: 320px;
-  text-align: center;
-  margin:auto;
-  margin-top: 50px;
-  }
-
-.login-brand {
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 300;
-  font-size: 28px;
-  letter-spacing: 0.12em;
-  color: #e8dcc8;
-  margin: 0 0 4px;
-}
-
-.login-sub {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 11px;
-  font-weight: 300;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgba(232,220,200,0.45);
-  margin: 0 0 36px;
-}
-
-.login-divider {
-  width: 32px;
-  height: 0.2px;
-  background: rgba(232,220,200,0.25);
-  margin: 0 auto 32px;
-}
-
-.login-input {
-  width: 100%;
-  box-sizing: border-box;
-  background: rgba(255,255,255,0.05);
-  border: 0.5px solid rgba(255,255,255,0.12);
-  border-radius: 8px;
-  padding: 12px 14px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  color: #e8dcc8;
-  margin-bottom: 10px;
-  outline: none;
-}
-
-.login-input::placeholder {
-  color: rgba(232,220,200,0.3);
-  letter-spacing: 0.05em;
-}
-
-.login-btn {
-  width: 100%;
-  margin-top: 8px;
-  padding: 12px;
-  background: rgba(232,220,200,0.1);
-  border: 0.5px solid rgba(232,220,200,0.25);
-  border-radius: 8px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #e8dcc8;
-  cursor: pointer;
-}
-
-.login-powered {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  color: rgba(232,220,200,0.2);
-  margin-top: 28px;
-}
-  body {
-    font-family: Arial;
-    text-align: center;
-    padding: 20px;
-  }
-
-  /* background logo */
-  #bg {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: url('luzzial.jpeg') no-repeat center center;
-    background-size: contain;
-    opacity: 0.12;
-    z-index: -1;
-  }
-
-  /* form inputs */
-  #formAgregar input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 8px 10px;
-    margin-bottom: 8px;
-    font-size: 15px;
-    border: 1.5px solid #007bff;
-    border-radius: 8px;
-  }
-
-  /* form buttons */
-  #formAgregar button {
-    width: 100%;
-    padding: 10px;
-    font-size: 15px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    margin-bottom: 6px;
-  }
-</style>
-
 <body>
 <div id="bg"></div>
+
 <!-- ── SCREEN 0: Login ── -->
-<div id="pantalla-login">
+<div id="login-screen">
   <div class="login-card">
     <p class="login-brand">AG Inventory</p>
     <p class="login-sub">Facilitador de inventario</p>
     <p style="font-family: 'DM Sans', sans-serif; font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(232,220,200,0.2); margin: 0 0 32px;">beta version</p>
-<input class="login-input" id="inputUser" type="text" placeholder="Usuario" autocomplete="off">
-<input class="login-input" id="inputPass" type="password" placeholder="Contraseña" autocomplete="off">
+    <input class="login-input" id="inputUser" type="text" placeholder="Usuario" autocomplete="off">
+    <input class="login-input" id="inputPass" type="password" placeholder="Contraseña" autocomplete="off">
     <button class="login-btn" onclick="login()">Ingresar</button>
     <p id="msgLogin"></p>
     <p class="login-powered">Powered by AGalvis</p>
   </div>
 </div>
+
 <!-- ── SCREEN 1: Main ── -->
-<div id="pantalla-principal">
+<div id="main-screen">
   <h2>Producto a escanear</h2>
   <div id="reader" style="width:300px; margin:auto;"></div>
   <button onclick="startScanner()">📷 Iniciar Scanner</button>
   <button onclick="stopScanner()">⏹️ Detener Scanner</button>
-    <br><br>
+  <br><br>
   <input id="manualCode" placeholder="Prod a buscar...">
-  <button onclick="checkproduct()">Buscar</button>
+  <button onclick="searchProduct()">Buscar</button>
   <br><br>
   <button onclick="getProducts()">📦 Ver inventario</button>
-  <button onclick="abrirAgregar()">➕ Agregar producto</button>
+  <button onclick="openAdd()">➕ Agregar producto</button>
   <br><br>
-  <button id="btnRemision" onclick="abrirRemision()">📋 Nueva remisión</button>
-    <p id="result"></p>
+  <button id="btnDeliveryNote" onclick="openDeliveryNote()">📋 Nueva remisión</button>
+  <p id="result"></p>
   <div id="actions" style="margin-top:20px; display:none;">
     <button onclick="addStock(true)">➕ Agregar</button>
     <button onclick="addStock(false)">➖ Descontar</button>
@@ -176,572 +45,54 @@
       id="qty"
       type="number"
       placeholder="Cantidad"
-      style="margin-top:10px; padding:8px; font-size:16px; border:2px solid #007bff; border-radius:8px; background-color:#e6f0ff;"   
-      />
-    </div>
-    <p style="font-size:11px; color:#aaa; margin-top:32px;">Powered by AG Inventory</p>
-    <br><br>
-<button onclick="cerrarSesion()" style="font-size:11px; background:none; border:none; color:#125; cursor:pointer; text-decoration:underline;">Cerrar sesión</button>
+      style="margin-top:10px; padding:8px; font-size:16px; border:2px solid #007bff; border-radius:8px; background-color:#e6f0ff;"
+    />
+  </div>
+  <p style="font-size:11px; color:#aaa; margin-top:32px;">Powered by AG Inventory</p>
+  <br><br>
+  <button onclick="logout()" style="font-size:11px; background:none; border:none; color:#aaa; cursor:pointer; text-decoration:underline;">Cerrar sesión</button>
 </div>
+
 <!-- ── SCREEN 2: Inventory list ── -->
-<div id="pantalla-inventario" style="display:none;">
-  <button onclick="mostrarPantalla('pantalla-principal')" style="margin-bottom:16px;">← Volver</button>
+<div id="inventory-screen" style="display:none;">
+  <button onclick="showScreen('main-screen')" style="margin-bottom:16px;">← Volver</button>
   <div id="lista-inventario"></div>
 </div>
+
 <!-- ── SCREEN 3: Add product ── -->
-<div id="pantalla-agregar" style="display:none;">
-  <button onclick="mostrarPantalla('pantalla-principal')" style="margin-bottom:16px;">← Volver</button>
+<div id="adding-screen" style="display:none;">
+  <button onclick="showScreen('main-screen')" style="margin-bottom:16px;">← Volver</button>
   <div id="formAgregar" style="max-width:340px; margin:0 auto; text-align:left; background:#f9f9f9; border:1px solid #ddd; border-radius:12px; padding:16px;">
     <h3 style="text-align:center; margin:0 0 14px; font-size:16px;">Nuevo producto</h3>
     <input id="inputCodigo" type="number" placeholder="Código (auto)" readonly>
-    <input id="inputNombre" type="text"   placeholder="Nombre del producto">
+    <input id="inputNombre" type="text" placeholder="Nombre del producto">
     <input id="inputPrecio" type="number" placeholder="Precio">
-    <input id="inputStock"  type="number" placeholder="Stock inicial">
-    <button onclick="guardarProducto()">💾 Guardar</button>
+    <input id="inputStock" type="number" placeholder="Stock inicial">
+    <button onclick="saveProduct()">💾 Guardar</button>
     <p id="msgFormulario"></p>
-    <div id="qr-nuevo" stlye="text-align:center;"></div>
+    <div id="qr-nuevo" style="text-align:center;"></div>
   </div>
 </div>
-<!-- ── SCREEN 4: Remision ── -->
-<div id="pantalla-remision" style="display:none;">
-  <button onclick="mostrarPantalla('pantalla-principal')" style="margin-bottom:16px;">← Volver</button>
+
+<!-- ── SCREEN 4: Delivery note ── -->
+<div id="deliverynote-screen" style="display:none;">
+  <button onclick="showScreen('main-screen')" style="margin-bottom:16px;">← Volver</button>
   <h3>Nueva remisión</h3>
   <div id="lista-remision"></div>
   <div id="carrito" style="margin-top:16px;"></div>
+  <div style="max-width:400px; margin:auto; padding:12px 0;">
+    <input id="remisionDestinatario" placeholder="Nombre del destinatario"
+           style="width:100%; padding:8px; margin-bottom:8px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
+    <input id="remisionDireccion" placeholder="Dirección (opcional)"
+           style="width:100%; padding:8px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
+  </div>
   <div id="btn-generar" style="display:none; text-align:center; margin-top:16px;">
-  <button onclick="generarRemision()">📄 Generar remisión</button>
-</div>
+    <button onclick="generateDeliveryNote()">📄 Generar remisión</button>
+  </div>
 </div>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
-
-<script>
-/*clientId filter*/
-function getClientId() {
-  return sessionStorage.getItem('clientId');
-}
-/*scanner*/
-const API           = 'https://inventory-backend-mwnq.onrender.com';
-const SCAN_COOLDOWN = 1500;
-
-let currentProductKey = null;
-let scanned           = false;
-let lastStock         = null;
-let carrito           = {};
-
-// ── Show one screen, hide all others ──
-function mostrarPantalla(id) {
-  ['pantalla-login','pantalla-principal', 'pantalla-inventario', 'pantalla-agregar','pantalla-remision']
-    .forEach(p => document.getElementById(p).style.display = 'none');
-  document.getElementById(id).style.display = 'block';
-}
-
-// ── Reset shared state and product UI ──
-function limpiarPantalla() {
-  document.getElementById('result').innerText       = '';
-  document.getElementById('actions').style.display  = 'none';
-  currentProductKey = null;
-  lastStock         = null;
-}
-
-// ── Render product detail on screen 3 ──
-function renderProduct(data, code) {
-  currentProductKey = code;
-  lastStock         = data.stock;
-
-  const stockColor = data.stock < 10 ? 'red' : 'black';
-
-  document.getElementById('result').innerHTML =
-    `<strong style="font-size:18px">${data.name}</strong><br>
-     <span style="color:#777">Código: ${code}</span><br><br>
-     💰 Precio: $${data.price}<br>
-     📦 Stock: <strong style="color:${stockColor}">${data.stock}</strong><br><br>
-     <button onclick="generarQR('${code}')">🖨️ Generar QR</button>`;
-
-  document.getElementById('actions').style.display = 'block';
-  mostrarPantalla('pantalla-principal');
-}
-
-// ── Generate and display QR below product detail ──
-function generarQR(code) {
-  const url = `https://api.qrserver.com/v1/create-qr-code/?data=${code}&size=200x200`;
-  
-  // Remove existing QR if already shown
-  const existing = document.getElementById('qr-container');
-  if (existing) existing.remove();
-
-  document.getElementById('result').innerHTML +=
-    `<div id="qr-container" style="margin-top:16px;"><img src="${url}" alt="QR ${code}"><br><small>${code}</small></div>`;
-}
-//features
-function getFeatures() {
-  return JSON.parse(sessionStorage.getItem('features') || '{}');
-}
-// ── Apply feature flags to UI ──
-function aplicarFlags(features) {
-  document.getElementById('btnRemision').style.display = 
-    features.remisiones ? 'inline-block' : 'none';
-}
-//login transaction
-async function login() {
-  const username = document.getElementById('inputUser').value.trim();
-  const password = document.getElementById('inputPass').value.trim();
-  const msg      = document.getElementById('msgLogin');
-
-  if (!username || !password) {
-    msg.style.color = 'red';
-    msg.innerText   = 'Usuario y contraseña son obligatorios';
-    return;
-  }
-
-  msg.style.color = 'gray';
-  msg.innerText   = 'Ingresando...';
-
-  try {
-    const data = await postData(`${API}/login`, { username, password });
-
-    if (data.error) {
-      msg.style.color = 'red';
-      msg.innerText   = data.error;
-      return;
-    }
-
-    sessionStorage.setItem('clientId', data.clientId);
-    sessionStorage.setItem('logoUrl', data.logoUrl);
-   if (data.logoUrl) {
-  document.getElementById('bg').style.backgroundImage = `url('${data.logoUrl}')`;
-}
-    sessionStorage.setItem('features', JSON.stringify(data.features));
-
-document.getElementById('bg').style.display = 'block';
-mostrarPantalla('pantalla-principal');
-aplicarFlags(data.features || {});
-  }
-   catch {
-    msg.style.color = 'red';
-    msg.innerText   = 'Error conectando al backend';
-  }
-}
-// ── Generic POST helper ──
-async function postData(url, body) {
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    if (!res.ok) throw new Error('Server error');
-    return await res.json();
-  } catch (err) {
-    console.log('Fetch error:', err);
-    throw err;
-  }
-}
-
-// ── Generic GET helper ──
-async function getData(url) {
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('Server error');
-    return await res.json();
-  } catch (err) {
-    console.log('Fetch error:', err);
-    throw err;
-  }
-}
-
-// ── Stock update via API ──
-async function updateStockAPI(code, qty) {
-  return await postData(`${API}/update-stock`, { code, qty, clientId:getClientId() });
-}
-
-// ── Fetch single product and navigate to detail screen ──
-async function fetchProduct(code) {
-  limpiarPantalla();
-  mostrarPantalla('pantalla-principal');
-  document.getElementById('result').innerHTML =
-    '<span style="color:gray">Buscando producto...</span>';
-
-  try {
-    const data = await postData(`${API}/scan`, { code, clientId:getClientId() });
-
-    if (data.error) {
-      document.getElementById('result').innerText = 'No encontrado';
-      return;
-    }
-    renderProduct(data, code);
-
-  } catch {
-    document.getElementById('result').innerText = 'Error conectando al backend';
-  }
-}
-
-// ── QR scan success callback ──
-async function onScanSuccess(decodedText) {
-  if (scanned) return;
-  scanned = true;
-
-  const cleanCode = decodedText
-    .trim()
-    .replace(/\s/g, '')
-    .replace(/[^\d]/g, '');
-
-  await fetchProduct(cleanCode);
-
-  // TC5X-style cooldown — re-arms scanner after delay
-  setTimeout(() => { scanned = false; }, SCAN_COOLDOWN);
-}
-
-// ── Add or remove stock ──
-async function addStock(isadding) {
-  if (!currentProductKey) return;
-
-  const input    = document.getElementById('qty');
-  const qty      = parseInt(input.value) || 1;
-  const finalQty = isadding ? qty : -qty;
-
-  // Block negative stock on frontend before calling backend
-  if (!isadding && qty > lastStock) {
-    document.getElementById('result').innerText = '⚠️ Stock insuficiente';
-    return;
-  }
-
-  document.getElementById('result').innerHTML =
-    `<span style="color:gray">${isadding ? 'Agregando' : 'Restando'} stock...</span>`;
-
-  let data;
-  try {
-    data = await updateStockAPI(currentProductKey, finalQty);
-  } catch (err) {
-    console.error('ERROR:', err);
-    document.getElementById('result').innerText = 'Error conectando al backend';
-    return;
-  }
-
-  if (data.error) {
-    document.getElementById('result').innerText = data.error;
-    return;
-  }
-
-  input.value = '';
-
-  const previous = lastStock ?? data.stock;
-  const current  = data.stock;
-  const diff     = current - previous;
-
-  document.getElementById('result').innerText =
-    `Actualizado\n\nProducto: ${data.name}\nPrecio: $${data.price}\n\nStock anterior: ${previous}\nCambio: ${diff > 0 ? '+' : ''}${diff}\nStock actual: ${current}`;
-
-  lastStock = current;
-}
-
-// ── Manual code search ──
-async function checkproduct() {
-  document.getElementById('actions').style.display = 'none';
-  currentProductKey = null;
-  lastStock = null;
-  let name = document.getElementById('manualCode').value.trim();
-
-  if (!name) {
-    alert('Escribe un nombre');
-    return;
-  }
-
-  document.getElementById('manualCode').value = '';
-  
-  mostrarPantalla('pantalla-principal');
-  document.getElementById('result').innerHTML =
-    '<span style="color:gray">Buscando...</span>';
-
-  try {
-    const data = await postData(`${API}/search`, { name , clientId:getClientId() });
-
-    if (data.error) {
-      document.getElementById('result').innerText = 'No encontrado';
-      return;
-    }
-
-    // If only one result, go directly to detail
-    if (data.length === 1) {
-      await fetchProduct(data[0].code);
-      return;
-    }
-
-    // Multiple results — show list
-    let html = `<div style="max-width:400px; margin:auto; text-align:left;">`;
-    data.forEach(p => {
-      const color = p.stock < 10 ? 'red' : '#333';
-      html += `
-        <div onclick="fetchProduct('${p.code}')"
-             style="display:flex; justify-content:space-between; align-items:center;
-                    padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
-          <div>
-            <div style="font-weight:600;">${p.name}</div>
-            <div style="font-size:12px; color:#777;">${p.code}</div>
-          </div>
-          <div style="font-weight:bold; color:${color};">${p.stock}</div>
-        </div>
-      `;
-    });
-    html += `</div>`;
-    document.getElementById('result').innerHTML = html;
-
-  } catch {
-    document.getElementById('result').innerText = 'Error conectando al backend';
-  }
-}
-// ── Load and display full inventory list ──
-async function getProducts() {
-  mostrarPantalla('pantalla-inventario');
-  document.getElementById('lista-inventario').innerHTML =
-    '<span style="color:gray">Cargando inventario...</span>';
-
-  try {
-    const data = await getData(`${API}/products?clientId=${getClientId()}`);
-
-    let html = `
-      <div style="max-width:400px; margin:auto; text-align:left;">
-        <h3 style="text-align:center; margin-bottom:15px;">Inventario</h3>
-    `;
-
-    data
-      .sort((a, b) => a.code.localeCompare(b.code))
-      .forEach(p => {
-        const color = p.stock < 10 ? 'red' : '#333';
-        html += `
-          <div onclick="selectProduct('${p.code}')"
-               style="display:flex; justify-content:space-between; align-items:center;
-                      padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
-            <div>
-              <div style="font-weight:600;">${p.name}</div>
-              <div style="font-size:12px; color:#777;">${p.code}</div>
-            </div>
-            <div style="font-weight:bold; color:${color};">${p.stock}</div>
-          </div>
-        `;
-      });
-
-    html += `</div>`;
-    document.getElementById('lista-inventario').innerHTML = html;
-
-  } catch {
-    document.getElementById('lista-inventario').innerText = 'Error conectando al backend';
-  }
-}
-
-// ── Select product from inventory list ──
-async function selectProduct(code) {
-  await fetchProduct(code);
-}
-
-// ── Open add product screen and auto-calculate next code ──
-async function abrirAgregar() {
-  mostrarPantalla('pantalla-agregar');
-
-  document.getElementById('inputNombre').value       = '';
-  document.getElementById('inputPrecio').value       = '';
-  document.getElementById('inputStock').value        = '';
-  document.getElementById('msgFormulario').innerText = '';
-
-  try {
-    const products = await getData(`${API}/products?clientId=${getClientId()}`);
-    const codes    = products.map(p => Number(p.code)).filter(n => !isNaN(n));
-    const nextCode = codes.length > 0 ? Math.max(...codes) + 1 : 100;
-    document.getElementById('inputCodigo').value = nextCode;
-  } catch {
-    document.getElementById('inputCodigo').value = '';
-  }
-}
-
-// ── Save new product to backend ──
-async function guardarProducto() {
-  const code  = document.getElementById('inputCodigo').value.trim();
-  const name  = document.getElementById('inputNombre').value.trim();
-  const price = document.getElementById('inputPrecio').value.trim();
-  const stock = document.getElementById('inputStock').value.trim() || '0';
-  const msg   = document.getElementById('msgFormulario');
-
-  // Validate required fields
-  if (!name || !price) {
-    msg.style.color = 'red';
-    msg.innerText   = 'Nombre y precio son obligatorios';
-    return;
-  }
-
-  // Block negative initial stock
-  if (Number(stock) < 0) {
-    msg.style.color = 'red';
-    msg.innerText   = 'El stock no puede ser negativo';
-    return;
-  }
-
-  msg.style.color = 'gray';
-  msg.innerText   = 'Guardando...';
-
-  try {
-    const data = await postData(`${API}/add-product`, {
-  code,
-  name,
-  price: Number(price),
-  stock: Number(stock),
-  clientId: getClientId()
-});
-    if (data.error) {
-      msg.style.color = 'red';
-      msg.innerText   = data.error;
-      return;
-    }
-
-    msg.style.color = 'green';
-    msg.innerText   = `✅ "${name}" guardado`;
-    const url = `https://api.qrserver.com/v1/create-qr-code/?data=${code}&size=200x200`;
-    document.getElementById('qr-nuevo').innerHTML =
-    `<br><img src="${url}" alt="QR ${code}"><br><small>${code}</small>`;
-
-    // Clear fields and bump code for next product
-    document.getElementById('inputNombre').value = '';
-    document.getElementById('inputPrecio').value = '';
-    document.getElementById('inputStock').value  = '';
-    document.getElementById('inputCodigo').value = Number(code) + 1;
-
-  } catch {
-    msg.style.color = 'red';
-    msg.innerText   = 'Error conectando al backend';
-  }
-}
-
-// ── Scanner init ──
-const html5QrCode = new Html5Qrcode('reader');
-let scanning = false;
-
-function startScanner() {
-  if (scanning) return;
-
-  setTimeout(() => {
-    html5QrCode.start(
-      { facingMode: 'environment' },
-      { fps: 10, qrbox: { width: 300, height: 300 } },
-      onScanSuccess
-    ).then(() => {
-      scanning = true;
-    }).catch(() => {
-      html5QrCode.start(
-        { facingMode: 'user' },
-        { fps: 10, qrbox: 250 },
-        onScanSuccess
-      ).then(() => {
-        scanning = true;
-      });
-    });
-  }, 300);
-}
-function stopScanner() {
-  if (!scanning) return;
-  html5QrCode.stop().then(() => {
-    scanning = false;
-  });
-}
-document.getElementById('bg').style.display = 'none';
-mostrarPantalla('pantalla-login');
-/*remision feature*/
-// ── Open remision screen and load products ──
-async function abrirRemision() {
-  mostrarPantalla('pantalla-remision');
-  document.getElementById('carrito').innerHTML = '';
-  document.getElementById('btn-generar').style.display = 'none';
-
-  try {
-    const products = await getData(`${API}/products?clientId=${getClientId()}`);
-
-    let html = `<div style="max-width:400px; margin:auto; text-align:left;">`;
-    products
-      .sort((a, b) => a.code.localeCompare(b.code))
-      .forEach(p => {
-        html += `
-          <div onclick="agregarAlCarrito('${p.code}', '${p.name}', ${p.price}, ${p.stock})"
-               id="item-${p.code}"
-               style="display:flex; justify-content:space-between; align-items:center;
-                      padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
-            <div>
-              <div style="font-weight:600;">${p.name}</div>
-              <div style="font-size:12px; color:#777;">${p.code}</div>
-            </div>
-            <div style="font-size:12px; color:#333;">Stock: ${p.stock}</div>
-          </div>
-        `;
-      });
-    html += `</div>`;
-    document.getElementById('lista-remision').innerHTML = html;
-
-  } catch {
-    document.getElementById('lista-remision').innerText = 'Error cargando productos';
-  }
-}
-// ── Add product to remision cart ──
-function agregarAlCarrito(code, name, price, stock) {
-  if (carrito[code]) {
-    // Already in cart — remove it
-    delete carrito[code];
-    document.getElementById(`item-${code}`).style.background = '';
-  } else {
-    // Add to cart
-    carrito[code] = { name, price, stock, qty: 1 };
-    document.getElementById(`item-${code}`).style.background = '#e6f0ff';
-  }
-  renderCarrito();
-}
-// ── Render cart with quantity inputs ──
-function renderCarrito() {
-  const items = Object.entries(carrito);
-  
-  if (items.length === 0) {
-    document.getElementById('carrito').innerHTML = '';
-    document.getElementById('btn-generar').style.display = 'none';
-    return;
-  }
-
-  let html = `<div style="max-width:400px; margin:auto; text-align:left; border-top:2px solid #007bff; padding-top:12px;">
-    <h4 style="text-align:center;">Productos seleccionados</h4>`;
-
-  items.forEach(([code, item]) => {
-    html += `
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee;">
-        <div style="font-size:13px; font-weight:600;">${item.name}</div>
-        <input type="number" min="1" max="${item.stock}" value="${item.qty}"
-               onchange="carrito['${code}'].qty = parseInt(this.value) || 1"
-               style="width:60px; padding:4px; border:1px solid #007bff; border-radius:6px; text-align:center;">
-      </div>
-    `;
-  });
-
-  html += `</div>`;
-  document.getElementById('carrito').innerHTML = html;
-  document.getElementById('btn-generar').style.display = 'block';
-}
-/*log out*/
-function cerrarSesion() {
-  sessionStorage.removeItem('clientId');
-  sessionStorage.removeItem('logoUrl');
-  
-  // Reset app state
-  currentProductKey = null;
-  lastStock = null;
-  scanned = false; 
-  // Stop scanner if running
-  if (scanning) {
-    html5QrCode.stop().then(() => { scanning = false; });
-  }
-  
-  // Clear all screens
-  document.getElementById('result').innerText = '';
-  document.getElementById('actions').style.display = 'none';
-  document.getElementById('lista-inventario').innerHTML = '';
-  document.getElementById('bg').style.display = 'none';
-  document.getElementById('bg').style.backgroundImage = '';
-  
-  mostrarPantalla('pantalla-login');
-}
-</script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

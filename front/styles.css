@@ -1,0 +1,130 @@
+  /*login style*/
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400&display=swap');
+
+#login-screen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: #4a5568;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+.login-card {
+  background: #3d4452;
+  border-radius: 12px;
+  border: 0.5px solid rgba(255,255,255,0.08);
+  padding: 48px 40px 36px;
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+  margin:auto;
+  margin-top: 50px;
+  }
+
+.login-brand {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 28px;
+  letter-spacing: 0.12em;
+  color: #e8dcc8;
+  margin: 0 0 4px;
+}
+
+.login-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(232,220,200,0.45);
+  margin: 0 0 36px;
+}
+
+.login-divider {
+  width: 32px;
+  height: 0.2px;
+  background: rgba(232,220,200,0.25);
+  margin: 0 auto 32px;
+}
+
+.login-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.05);
+  border: 0.5px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #e8dcc8;
+  margin-bottom: 10px;
+  outline: none;
+}
+
+.login-input::placeholder {
+  color: rgba(232,220,200,0.3);
+  letter-spacing: 0.05em;
+}
+
+.login-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  background: rgba(232,220,200,0.1);
+  border: 0.5px solid rgba(232,220,200,0.25);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #e8dcc8;
+  cursor: pointer;
+}
+
+.login-powered {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: rgba(232,220,200,0.2);
+  margin-top: 28px;
+}
+  body {
+    font-family: Arial;
+    text-align: center;
+    padding: 20px;
+  }
+
+  /* background logo */
+  #bg {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: url('luzzial.jpeg') no-repeat center center;
+    background-size: contain;
+    opacity: 0.12;
+    z-index: -1;
+  }
+
+  /* form inputs */
+  #formAgregar input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    font-size: 15px;
+    border: 1.5px solid #007bff;
+    border-radius: 8px;
+  }
+
+  /* form buttons */
+  #formAgregar button {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    margin-bottom: 6px;
+  }
