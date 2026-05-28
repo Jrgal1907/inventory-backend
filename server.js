@@ -182,6 +182,7 @@ app.post('/search', async (req, res) => {
 //Delivery note history
 const DeliveryNote = mongoose.model('DeliveryNote', {
   clientId:    String,
+  number:      Number,
   date:        { type: Date, default: Date.now },
   recipient:   String,
   address:     String,
@@ -237,7 +238,7 @@ app.post('/next-delivery-number', async (req, res) => {
     counter.last += 1;
     await counter.save();
 
-    res.json({ number: `REM-${year}-${String(counter.last).padStart(3, '0')}` });
+    res.json({ number: `${year}-${String(counter.last).padStart(3, '0')}` });
   } catch (err) {
     res.status(500).json({ error: 'Error generando número' });
   }
