@@ -14,7 +14,7 @@ let cart              = {};
 
 // ── Show one screen, hide all others ──
 function showScreen(id) {
-  ['login-screen', 'main-screen', 'inventory-screen', 'adding-screen', 'deliverynote-screen']
+['login-screen', 'main-screen', 'inventory-screen', 'adding-screen', 'deliverynote-screen', 'history-screen']
     .forEach(p => document.getElementById(p).style.display = 'none');
   document.getElementById(id).style.display = 'block';
 }
@@ -522,7 +522,6 @@ async function generateDeliveryNote() {
   const recipient   = document.getElementById('remisionDestinatario').value || 'Sin especificar';
   const address     = document.getElementById('remisionDireccion').value;
   const issuer      = getClientId();
-
   // Stock validation — stop if any item exceeds available stock
   let hasError = false;
   Object.entries(cart).forEach(([code, item]) => {
@@ -541,26 +540,59 @@ async function generateDeliveryNote() {
 
   // PDF header
   doc.setFontSize(16);
-  doc.text('Remisión', 105, 20, { align: 'center' });
+  doc.setFont('helvetica', 'bold');
+  doc.text('Remisión', 180, 20, { align: 'right' });
   doc.setFontSize(10);
-  doc.text(`Emite: ${issuer}`,       14, 35);
-  doc.text(`Para: ${recipient}`,     14, 42);
-  doc.text(`Dirección: ${address}`,  14, 49);
-  doc.text(`Fecha: ${date}`,         14, 56);
+  // info style 
+  doc.setFont('helvetica', 'bold');
+  doc.text('Emite:', 14, 35);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`${issuer}`, 30, 35);
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('Para:', 14, 42);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`${recipient}`, 28, 42);
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('Dirección:', 14, 49);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`${address}`, 36, 49);
+
+  doc.setFont('helvetica', 'bold');
+  doc.text('Fecha:', 14, 56);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`${date}`, 28, 56);
+
+// brand style
+  doc.setFontSize(18);
+  doc.setFont('times', 'italic','bold');
+  doc.setTextColor(0, 123, 255);
+  doc.text(getClientId(), 14, 15);
+
+  doc.setTextColor(0, 0, 0);
+  doc.setFont('helvetica', 'normal');
+
+// deco soft lining
+  doc.setDrawColor(220);
+  doc.line(14, 60, 196, 60);
 
   // Table header
   let y = 65;
   doc.setFontSize(11);
+  doc.setFont('helvetica','bold');
   doc.text('Producto', 14,  y);
   doc.text('Cant.',    130, y);
   doc.text('Precio',   155, y);
   doc.text('Total',    180, y);
   y += 6;
+  doc.setDrawColor(200);
   doc.line(14, y, 196, y);
   y += 6;
 
   // Table rows
   let total = 0;
+  doc.setFont('helvetica', 'normal');
   Object.entries(cart).forEach(([code, item]) => {
     const subtotal = item.qty * item.price;
     total += subtotal;
@@ -573,16 +605,33 @@ async function generateDeliveryNote() {
 
   // Total row
   y += 4;
+  doc.setDrawColor(180);
   doc.line(14, y, 196, y);
   y += 8;
   doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
   doc.text(`Total: $${total}`, 180, y, { align: 'right' });
 
   // Discount stock for each item
   for (const [code, item] of Object.entries(cart)) {
     await updateStockAPI(code, -item.qty);
   }
+// Save delivery note to database
+const noteItems = Object.entries(cart).map(([code, item]) => ({
+  code,
+  name:     item.name,
+  qty:      item.qty,
+  price:    item.price,
+  subtotal: item.qty * item.price
+}));
 
+await postData(`${API}/delivery-notes`, {
+  clientId:  getClientId(),
+  recipient,
+  address,
+  items:     noteItems,
+  total
+});
   doc.save(`remision-${date}.pdf`);
 
   // Reset cart and fields
@@ -591,7 +640,81 @@ async function generateDeliveryNote() {
   document.getElementById('remisionDestinatario').value = '';
   document.getElementById('remisionDireccion').value    = '';
 }
+// ── Open delivery note history screen ──
+async function openHistory() {
+  clearScreen();
+  showScreen('history-screen');
+  document.getElementById('delivery-history').innerHTML =
+    '<span style="color:gray">Cargando historial...</span>';
 
+  try {
+    const notes = await getData(`${API}/delivery-notes?clientId=${getClientId()}`);
+
+    if (notes.length === 0) {
+      document.getElementById('delivery-history').innerText = 'No hay remisiones aún';
+      return;
+    }
+
+    let html = `<div style="max-width:400px; margin:auto; text-align:left;">`;
+    notes.forEach(note => {
+      const date = new Date(note.date).toLocaleDateString('es-CO');
+      html += `
+        <div style="padding:12px; border-bottom:1px solid #eee; cursor:pointer;"
+             onclick="showNoteDetail('${note._id}')">
+          <div style="font-weight:600;">${note.recipient}</div>
+          <div style="font-size:12px; color:#777;">${date} · $${note.total}</div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    document.getElementById('delivery-history').innerHTML = html;
+
+  } catch {
+    document.getElementById('delivery-history').innerText = 'Error cargando historial';
+  }
+}
+// ── Show delivery note detail ──
+async function showNoteDetail(id) {
+  try {
+    const notes = await getData(`${API}/delivery-notes?clientId=${getClientId()}`);
+    const note  = notes.find(n => n._id === id);
+
+    if (!note) return;
+
+    const date = new Date(note.date).toLocaleDateString('es-CO');
+
+    let html = `
+      <div style="max-width:400px; margin:auto; text-align:left; padding:16px;">
+        <button onclick="openHistory()" style="margin-bottom:16px;">← Volver</button>
+        <h4>${note.recipient}</h4>
+        <div style="font-size:13px; color:#777; margin-bottom:12px;">${date}${note.address ? ' · ' + note.address : ''}</div>
+    `;
+
+    note.items.forEach(item => {
+      html += `
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+          <div>
+            <div style="font-weight:600; font-size:13px;">${item.name}</div>
+            <div style="font-size:12px; color:#777;">x${item.qty} · $${item.price}</div>
+          </div>
+          <div style="font-weight:600;">$${item.subtotal}</div>
+        </div>
+      `;
+    });
+
+    html += `
+        <div style="text-align:right; margin-top:12px; font-weight:600; font-size:15px;">
+          Total: $${note.total}
+        </div>
+      </div>
+    `;
+
+    document.getElementById('delivery-history').innerHTML = html;
+
+  } catch {
+    document.getElementById('delivery-history').innerText = 'Error cargando detalle';
+  }
+}
 // ── Logout ──
 function logout() {
   sessionStorage.removeItem('clientId');
