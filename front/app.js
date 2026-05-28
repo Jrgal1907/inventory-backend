@@ -644,7 +644,7 @@ await postData(`${API}/delivery-notes`, {
   items:     noteItems,
   total
 });
-  doc.save(`remision-${date}.pdf`);
+  doc.save(`rem-${deliveryNumber}-${date}.pdf`);
 
   // Reset cart and fields
   cart = {};
@@ -674,7 +674,7 @@ async function openHistory() {
         <div style="padding:12px; border-bottom:1px solid #eee; cursor:pointer;"
              onclick="showNoteDetail('${note._id}')">
           <div style="font-weight:600;">${note.recipient}</div>
-          <div style="font-size:12px; color:#777;">${note.number || 'S/N'} · ${date} · $${note.total}</div>
+          <div style="font-size:12px; color:#777;">${deliveryNumber} · ${date} · $${note.total}</div>
         </div>
       `;
     });
