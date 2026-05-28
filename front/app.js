@@ -638,7 +638,7 @@ const noteItems = Object.entries(cart).map(([code, item]) => ({
 
 await postData(`${API}/delivery-notes`, {
   clientId:  getClientId(),
-  number:   deliveryNumber,
+  numberrem: deliveryNumber,
   recipient,
   address,
   items:     noteItems,
@@ -674,7 +674,7 @@ async function openHistory() {
         <div style="padding:12px; border-bottom:1px solid #eee; cursor:pointer;"
              onclick="showNoteDetail('${note._id}')">
           <div style="font-weight:600;">${note.recipient}</div>
-          <div style="font-size:12px; color:#777;">${deliveryNumber} · ${date} · $${note.total}</div>
+          <div style="font-size:12px; color:#777;">${note.numberrem} · ${date} · $${note.total}</div>
         </div>
       `;
     });
