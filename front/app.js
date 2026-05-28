@@ -538,21 +538,27 @@ async function generateDeliveryNote() {
 
   if (hasError) return;
 
+  const numberRes = await postData(`${API}/next-delivery-number`, { clientId: getClientId() });
+  const deliveryNumber = numberRes.number;
+
   // PDF header
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text('Remisión', 180, 20, { align: 'right' });
+  doc.text('Remisión', 170, 20, { align: 'right' });
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`${deliveryNumber}`, 190, 20,{ align: 'right' })
   doc.setFontSize(10);
   // info style 
   doc.setFont('helvetica', 'bold');
   doc.text('Emite:', 14, 35);
   doc.setFont('helvetica', 'normal');
-  doc.text(`${issuer}`, 30, 35);
+  doc.text(`${issuer}`, 36, 35);
 
   doc.setFont('helvetica', 'bold');
   doc.text('Para:', 14, 42);
   doc.setFont('helvetica', 'normal');
-  doc.text(`${recipient}`, 28, 42);
+  doc.text(`${recipient}`, 36, 42);
 
   doc.setFont('helvetica', 'bold');
   doc.text('Dirección:', 14, 49);
@@ -562,7 +568,7 @@ async function generateDeliveryNote() {
   doc.setFont('helvetica', 'bold');
   doc.text('Fecha:', 14, 56);
   doc.setFont('helvetica', 'normal');
-  doc.text(`${date}`, 28, 56);
+  doc.text(`${date}`, 36, 56);
 
 // brand style
   doc.setFontSize(18);
@@ -609,8 +615,13 @@ async function generateDeliveryNote() {
   doc.line(14, y, 196, y);
   y += 8;
   doc.setFontSize(12);
+  // Total
   doc.setFont('helvetica', 'bold');
-  doc.text(`Total: $${total}`, 180, y, { align: 'right' });
+  doc.text('Total:', 160, y);
+
+  // Value
+  doc.setFont('helvetica', 'normal');
+  doc.text(`$${total}`, 196, y, { align: 'right' });
 
   // Discount stock for each item
   for (const [code, item] of Object.entries(cart)) {
@@ -627,6 +638,7 @@ const noteItems = Object.entries(cart).map(([code, item]) => ({
 
 await postData(`${API}/delivery-notes`, {
   clientId:  getClientId(),
+  number:   deliveryNumber,
   recipient,
   address,
   items:     noteItems,
@@ -662,7 +674,7 @@ async function openHistory() {
         <div style="padding:12px; border-bottom:1px solid #eee; cursor:pointer;"
              onclick="showNoteDetail('${note._id}')">
           <div style="font-weight:600;">${note.recipient}</div>
-          <div style="font-size:12px; color:#777;">${date} · $${note.total}</div>
+          <div style="font-size:12px; color:#777;">${note.number || 'S/N'} · ${date} · $${note.total}</div>
         </div>
       `;
     });
@@ -675,7 +687,7 @@ async function openHistory() {
 }
 // ── Show delivery note detail ──
 async function showNoteDetail(id) {
-  try {
+try {
     const notes = await getData(`${API}/delivery-notes?clientId=${getClientId()}`);
     const note  = notes.find(n => n._id === id);
 
@@ -710,10 +722,15 @@ async function showNoteDetail(id) {
     `;
 
     document.getElementById('delivery-history').innerHTML = html;
-
   } catch {
     document.getElementById('delivery-history').innerText = 'Error cargando detalle';
   }
+}
+//Clear history
+async function clearHistory() {
+  if (!confirm('¿Borrar todo el historial?')) return;
+  await fetch(`${API}/delivery-notes?clientId=${getClientId()}`, { method: 'DELETE' });
+  openHistory();
 }
 // ── Logout ──
 function logout() {
