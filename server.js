@@ -216,6 +216,43 @@ app.get('/delivery-notes', async (req, res) => {
     res.status(500).json({ error: 'Error obteniendo remisiones' });
   }
 });
+// delivery note serial counting
+const Counter = mongoose.model('Counter', {
+  clientId: String,
+  year:     Number,
+  last:     { type: Number, default: 0 }
+});
+
+app.post('/next-delivery-number', async (req, res) => {
+  const { clientId } = req.body;
+  const year = new Date().getFullYear();
+
+  try {
+    let counter = await Counter.findOne({ clientId, year });
+
+    if (!counter) {
+      counter = new Counter({ clientId, year, last: 0 });
+    }
+
+    counter.last += 1;
+    await counter.save();
+
+    res.json({ number: `REM-${year}-${String(counter.last).padStart(3, '0')}` });
+  } catch (err) {
+    res.status(500).json({ error: 'Error generando número' });
+  }
+});
+
+app.delete('/delivery-notes', async (req, res) => {
+  const { clientId } = req.query;
+  try {
+    await DeliveryNote.deleteMany({ clientId });
+    res.json({ message: 'Historial borrado' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error borrando historial' });
+  }
+});
+
 // START SERVER
 const PORT = process.env.PORT || 3000;
 
