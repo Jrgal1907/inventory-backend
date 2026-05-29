@@ -182,7 +182,7 @@ app.post('/search', async (req, res) => {
 //Delivery note history
 const DeliveryNote = mongoose.model('DeliveryNote', {
   clientId:    String,
-  number:   Number,
+  number:      String,
   date:        { type: Date, default: Date.now },
   recipient:   String,
   address:     String,
