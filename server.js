@@ -197,10 +197,10 @@ const DeliveryNote = mongoose.model('DeliveryNote', {
 });
 //delivery note endpoint
 app.post('/delivery-notes', async (req, res) => {
-  const { clientId, recipient, address, items, total } = req.body;
+  const { clientId,number ,recipient, address, items, total } = req.body;
 
   try {
-    const note = new DeliveryNote({ clientId, recipient, address, items, total });
+    const note = new DeliveryNote({ clientId, number ,recipient, address, items, total });
     await note.save();
     res.json({ message: 'Remisión guardada', note });
   } catch (err) {
