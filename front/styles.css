@@ -128,3 +128,23 @@
     cursor: pointer;
     margin-bottom: 6px;
   }
+  /*product editio*/
+  #formEditar input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  font-size: 15px;
+  border: 1.5px solid #007bff;
+  border-radius: 8px;
+}
+
+#formEditar button {
+  width: 100%;
+  padding: 10px;
+  font-size: 15px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 6px;
+}

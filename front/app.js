@@ -14,8 +14,7 @@ let cart              = {};
 
 // ── Show one screen, hide all others ──
 function showScreen(id) {
-['login-screen', 'main-screen', 'inventory-screen', 'adding-screen', 'deliverynote-screen', 'history-screen']
-    .forEach(p => document.getElementById(p).style.display = 'none');
+['login-screen', 'main-screen', 'inventory-screen', 'adding-screen', 'deliverynote-screen', 'history-screen', 'editing-screen']    .forEach(p => document.getElementById(p).style.display = 'none');
   document.getElementById(id).style.display = 'block';
 }
 
@@ -39,6 +38,7 @@ function renderProduct(data, code) {
      <span style="color:#777">Código: ${code}</span><br><br>
      💰 Precio: $${data.price}<br>
      📦 Stock: <strong style="color:${stockColor}">${data.stock}</strong><br><br>
+     <button onclick="openEdit('${code}', '${data.name}', ${data.price})">✏️ Editar</button>
      <button onclick="generateQR('${code}')">🖨️ Generar QR</button>`;
 
   document.getElementById('actions').style.display = 'block';
@@ -402,7 +402,53 @@ async function saveProduct() {
     msg.innerText   = 'Error conectando al backend';
   }
 }
+// ── Open edit product screen ──
+function openEdit(code, name, price) {
+  clearScreen();
+  showScreen('editing-screen');
+  document.getElementById('editCodigo').value  = code;
+  document.getElementById('editNombre').value  = name;
+  document.getElementById('editPrecio').value  = price;
+  document.getElementById('msgEditar').innerText = '';
+}
 
+// ── Save edited product ──
+async function saveEdit() {
+  const code  = document.getElementById('editCodigo').value.trim();
+  const name  = document.getElementById('editNombre').value.trim();
+  const price = document.getElementById('editPrecio').value.trim();
+  const msg   = document.getElementById('msgEditar');
+
+  if (!name || !price) {
+    msg.style.color = 'red';
+    msg.innerText   = 'Nombre y precio son obligatorios';
+    return;
+  }
+
+  msg.style.color = 'gray';
+  msg.innerText   = 'Guardando...';
+
+  try {
+    const data = await fetch(`${API}/update-product`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, name, price, clientId: getClientId() })
+    }).then(r => r.json());
+
+    if (data.error) {
+      msg.style.color = 'red';
+      msg.innerText   = data.error;
+      return;
+    }
+
+    msg.style.color = 'green';
+    msg.innerText   = '✅ Producto actualizado';
+
+  } catch {
+    msg.style.color = 'red';
+    msg.innerText   = 'Error conectando al backend';
+  }
+}
 // ── Scanner init ──
 const html5QrCode = new Html5Qrcode('reader');
 let scanning = false;

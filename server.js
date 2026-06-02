@@ -86,6 +86,15 @@ app.put('/update-product', async (req, res) => {
     res.status(500).json({ error: 'Error actualizando producto' });
   }
 });
+app.delete('/delete-product', async (req, res) => {
+  const { clientId, code } = req.query;
+  try {
+    await Product.deleteOne({ clientId, code });
+    res.json({ message: 'Producto eliminado' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error eliminando producto' });
+  }
+});
 // user endpoint
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
