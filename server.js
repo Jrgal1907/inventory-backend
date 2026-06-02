@@ -69,6 +69,23 @@ if (!code || !name || isNaN(price) || isNaN(stock) || stock < 0) {
 res.status(500).json({ error: "Error guardando producto" });;
   }
 });
+//update current propducts
+app.put('/update-product', async (req, res) => {
+  const { clientId, code, name, price } = req.body;
+
+  try {
+    const product = await Product.findOne({ clientId, code });
+    if (!product) return res.status(404).json({ error: 'No encontrado' });
+
+    if (name)  product.name  = name;
+    if (price) product.price = Number(price);
+
+    await product.save();
+    res.json(product);
+  } catch (err) {
+    res.status(500).json({ error: 'Error actualizando producto' });
+  }
+});
 // user endpoint
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
