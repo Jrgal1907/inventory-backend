@@ -10,6 +10,7 @@ const SCAN_COOLDOWN = 1500;
 let currentProductKey = null;
 let scanned           = false;
 let lastStock         = null;
+let price             = null;
 let cart              = {};
 
 // ── Show one screen, hide all others ──
@@ -260,16 +261,19 @@ async function searchProduct() {
     data.forEach(p => {
       const color = p.stock < 10 ? 'red' : '#333';
       html += `
-        <div onclick="fetchProduct('${p.code}')"
-             style="display:flex; justify-content:space-between; align-items:center;
-                    padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
-          <div>
-            <div style="font-weight:600;">${p.name}</div>
-            <div style="font-size:12px; color:#777;">${p.code}</div>
-          </div>
-          <div style="font-weight:bold; color:${color};">${p.stock}</div>
-        </div>
-      `;
+  <div onclick="fetchProduct('${p.code}')"
+       style="display:flex; justify-content:space-between; align-items:center;
+              padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
+    <div>
+      <div style="font-weight:600;">${p.name}</div>
+      <div style="font-size:12px; color:#777;">${p.code}</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-weight:bold; color:${color};">${p.stock}</div>
+      <div style="font-size:12px; color:#555;">$${p.price}</div>
+    </div>
+  </div>
+  `;
     });
     html += `</div>`;
     document.getElementById('result').innerHTML = html;
@@ -299,16 +303,19 @@ async function getProducts() {
       .forEach(p => {
         const color = p.stock < 10 ? 'red' : '#333';
         html += `
-          <div onclick="selectProduct('${p.code}')"
-               style="display:flex; justify-content:space-between; align-items:center;
-                      padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
-            <div>
-              <div style="font-weight:600;">${p.name}</div>
-              <div style="font-size:12px; color:#777;">${p.code}</div>
-            </div>
-            <div style="font-weight:bold; color:${color};">${p.stock}</div>
-          </div>
-        `;
+  <div onclick="fetchProduct('${p.code}')"
+       style="display:flex; justify-content:space-between; align-items:center;
+              padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
+    <div>
+      <div style="font-weight:600;">${p.name}</div>
+      <div style="font-size:12px; color:#777;">${p.code}</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-weight:bold; color:${color};">${p.stock}</div>
+      <div style="font-size:12px; color:#555;">$${p.price}</div>
+    </div>
+  </div>
+`;
       });
 
     html += `</div>`;
@@ -447,6 +454,18 @@ async function saveEdit() {
   } catch {
     msg.style.color = 'red';
     msg.innerText   = 'Error conectando al backend';
+  }
+}
+// ── Delete product ──
+async function deleteProduct() {
+  const code = document.getElementById('editCodigo').value.trim();
+  if (!confirm('¿Eliminar este producto? Esta acción no se puede deshacer.')) return;
+
+  try {
+    await fetch(`${API}/delete-product?clientId=${getClientId()}&code=${code}`, { method: 'DELETE' });
+    showScreen('main-screen');
+  } catch {
+    alert('Error eliminando producto');
   }
 }
 // ── Scanner init ──
