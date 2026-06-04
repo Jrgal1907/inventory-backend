@@ -70,6 +70,7 @@
     <input id="inputPrecio" type="number" placeholder="Precio">
     <input id="inputStock" type="number" placeholder="Stock inicial">
     <button onclick="saveProduct()">💾 Guardar</button>
+    <button onclick="showScreen('import-screen')">📤 Importar productos</button>
     <p id="msgFormulario"></p>
     <div id="qr-nuevo" style="text-align:center;"></div>
   </div>
@@ -118,10 +119,23 @@
     <p id="msgEditar"></p>
   </div>
 </div>
+<!-- ── SCREEN 7: Import products ── -->
+<div id="import-screen" style="display:none;">
+  <button onclick="showScreen('main-screen')" style="margin-bottom:16px;">← Volver</button>
+  <h3>Importar productos</h3>
+  <div style="max-width:400px; margin:auto; text-align:center;">
+    <button onclick="downloadTemplate()">📥 Descargar template CSV</button>
+    <br><br>
+    <input type="file" id="importFile" accept=".csv" onchange="handleImportFile(event)">
+    <p id="import-msg"></p>
+    <div id="import-preview"></div>
+  </div>
+</div>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="app.js"></script>
 <script src="deliverynote.js"></script>
+<script src="import.js"></script>
 </body>
 </html>

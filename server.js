@@ -279,6 +279,42 @@ app.delete('/delivery-notes', async (req, res) => {
     res.status(500).json({ error: 'Error borrando historial' });
   }
 });
+// massive import 
+app.post('/import-products', async (req, res) => {
+  const { clientId, products } = req.body;
+
+  if (!clientId || !products || !products.length) {
+    return res.status(400).json({ error: 'Datos inválidos' });
+  }
+
+  try {
+    const results = { saved: 0, skipped: 0, errors: [] };
+
+    for (const p of products) {
+      try {
+        const newProduct = new Product({
+          clientId,
+          code:  String(p.code),
+          name:  p.name,
+          price: Number(p.price),
+          stock: Number(p.stock) || 0
+        });
+        await newProduct.save();
+        results.saved++;
+      } catch (err) {
+        if (err.code === 11000) {
+          results.skipped++;
+        } else {
+          results.errors.push(p.code);
+        }
+      }
+    }
+
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: 'Error importando productos' });
+  }
+});
 
 // START SERVER
 const PORT = process.env.PORT || 3000;

@@ -15,7 +15,7 @@ let cart              = {};
 
 // ── Show one screen, hide all others ──
 function showScreen(id) {
-['login-screen', 'main-screen', 'inventory-screen', 'adding-screen', 'deliverynote-screen', 'history-screen', 'editing-screen']    .forEach(p => document.getElementById(p).style.display = 'none');
+['login-screen', 'main-screen', 'inventory-screen', 'adding-screen', 'deliverynote-screen', 'history-screen', 'editing-screen','import-screen']    .forEach(p => document.getElementById(p).style.display = 'none');
   document.getElementById(id).style.display = 'block';
 }
 
