@@ -284,7 +284,7 @@ app.delete('/delivery-notes', async (req, res) => {
     res.status(500).json({ error: 'Error borrando historial' });
   }
 });
-// 2. Import — upsert por ref si existe
+// Import — upsert por ref si existe
 app.post('/import-products', async (req, res) => {
   const { clientId, products } = req.body;
   if (!clientId || !products || !products.length) {
@@ -292,47 +292,36 @@ app.post('/import-products', async (req, res) => {
   }
 
   try {
-    const results = { saved: 0, updated: 0, skipped: 0, errors: [] };
+    const results = { saved: 0, updated: 0, errors: [] };
 
     for (const p of products) {
       try {
-        // If ref exists, update stock instead of creating new
-        if (p.ref) {
-          const existing = await Product.findOne({ clientId, ref: p.ref });
-          if (existing) {
-            existing.stock += Number(p.stock) || 0;
-            await existing.save();
-            results.updated++;
-            continue;
-          }
-        }
-        // Check if product name already exists for this client
-        const existingByName = await Product.findOne({ 
-        clientId, 
-        name: { $regex: `^${p.name}$`, $options: 'i' } 
-        });
-        if (existingByName) {
-        results.skipped++;
-        continue;
-        }
+        // Find existing by ref OR by name
+        const query = { clientId, $or: [{ name: { $regex: `^${p.name}$`, $options: 'i' } }] };
+        if (p.ref) query.$or.push({ ref: p.ref });
 
-        const newProduct = new Product({
-          clientId,
-          code:  String(p.code),
-          name:  p.name,
-          price: Number(p.price),
-          stock: Number(p.stock) || 0,
-          ref:   p.ref || ''
-        });
-        await newProduct.save();
-        results.saved++;
+        const existing = await Product.findOne(query);
 
-      } catch (err) {
-        if (err.code === 11000) {
-          results.skipped++;
+        if (existing) {
+          existing.stock += Number(p.stock) || 0;
+          existing.price  = Number(p.price);
+          if (p.ref) existing.ref = p.ref;
+          await existing.save();
+          results.updated++;
         } else {
-          results.errors.push(p.code);
+          const newProduct = new Product({
+            clientId,
+            code:  String(p.code),
+            name:  p.name,
+            price: Number(p.price),
+            stock: Number(p.stock) || 0,
+            ref:   p.ref || ''
+          });
+          await newProduct.save();
+          results.saved++;
         }
+      } catch (err) {
+        results.errors.push(p.code);
       }
     }
 
