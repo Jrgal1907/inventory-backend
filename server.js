@@ -12,7 +12,8 @@ const ProductSchema = new mongoose.Schema({
   code:     String,
   name:     String,
   price:    Number,
-  stock:    Number
+  stock:    Number,
+  ref:      String  // ← vendor reference
 });
 ProductSchema.index({ clientId: 1, code: 1 }, { unique: true });
 const Product = mongoose.model('Product', ProductSchema);
@@ -192,17 +193,21 @@ mongoose.connection.on('error', err => {
 
 //SEARCH BASED ON LIKE 
 app.post('/search', async (req, res) => {
-  const { clientId,name } = req.body;
+  const { clientId, name } = req.body;
   try {
-    const products = await Product.find({ clientId,
-      name: {$regex: name, $options: 'i' }
+    const products = await Product.find({
+      clientId,
+      $or: [
+        { name: { $regex: name, $options: 'i' } },
+        { ref:  { $regex: name, $options: 'i' } }
+      ]
     });
     if (products.length === 0) {
-      return res.json({ error: "No encontrado" });
+      return res.json({ error: 'No encontrado' });
     }
     res.json(products);
   } catch (err) {
-    res.status(500).json({ error: "Error buscando producto" });
+    res.status(500).json({ error: 'Error buscando producto' });
   }
 });
 //Delivery note history
@@ -279,28 +284,40 @@ app.delete('/delivery-notes', async (req, res) => {
     res.status(500).json({ error: 'Error borrando historial' });
   }
 });
-// massive import 
+// 2. Import — upsert por ref si existe
 app.post('/import-products', async (req, res) => {
   const { clientId, products } = req.body;
-
   if (!clientId || !products || !products.length) {
     return res.status(400).json({ error: 'Datos inválidos' });
   }
 
   try {
-    const results = { saved: 0, skipped: 0, errors: [] };
+    const results = { saved: 0, updated: 0, skipped: 0, errors: [] };
 
     for (const p of products) {
       try {
+        // If ref exists, update stock instead of creating new
+        if (p.ref) {
+          const existing = await Product.findOne({ clientId, ref: p.ref });
+          if (existing) {
+            existing.stock += Number(p.stock) || 0;
+            await existing.save();
+            results.updated++;
+            continue;
+          }
+        }
+
         const newProduct = new Product({
           clientId,
           code:  String(p.code),
           name:  p.name,
           price: Number(p.price),
-          stock: Number(p.stock) || 0
+          stock: Number(p.stock) || 0,
+          ref:   p.ref || ''
         });
         await newProduct.save();
         results.saved++;
+
       } catch (err) {
         if (err.code === 11000) {
           results.skipped++;
