@@ -64,7 +64,7 @@ function getFeatures() {
 
 // ── Apply feature flags to UI ──
 function applyFlags(features) {
-  const showtes = features.remisiones ? 'inline-block' : 'none';
+  const shownotes = features.remisiones ? 'inline-block' : 'none';
   document.getElementById('btnDeliveryNote').style.display = shownotes;
   document.getElementById('btnHistory').style.display      = shownotes;
 }

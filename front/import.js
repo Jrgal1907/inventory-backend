@@ -1,44 +1,45 @@
+function openImport() {
+  clearScreen();
+  showScreen('import-screen');
+  document.getElementById('import-preview').innerHTML = '';
+  document.getElementById('import-msg').innerText     = '';
+  document.getElementById('importFile').value         = '';
+}
 // ── Download CSV template ──
 function downloadTemplate() {
-  const csv = `code;name;price;stock
-101;Nombre del producto;15000;10
-102;Otro producto;25000;5`;
-
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href     = url;
-  a.download = 'template-productos.csv';
+  a.href     = 'Template-products.xlsx';
+  a.download = 'Template-products.xlsx';
   a.click();
-  URL.revokeObjectURL(url);
 }
-
-// ── Parse CSV file ──
-function parseCSV(text) {
-  const lines   = text.trim().split('\n');
-  const headers = lines[0].split(';').map(h => h.trim());
-  
-  return lines.slice(1).map(line => {
-    const values = line.split(';').map(v => v.trim());
-    const obj    = {};
-    headers.forEach((h, i) => obj[h] = values[i]);
-    return obj;
-  });
-}
-
 // ── Handle file upload and show preview ──
-function handleImportFile(event) {
-  const file   = event.target.files[0];
+async function handleImportFile(event) {
+  const file = event.target.files[0];
   if (!file) return;
+
+  // Get next code from backend
+  const products    = await getData(`${API}/products?clientId=${getClientId()}`);
+  const codes       = products.map(p => Number(p.code)).filter(n => !isNaN(n));
+  let   nextCode    = codes.length > 0 ? Math.max(...codes) + 1 : 100;
 
   const reader = new FileReader();
   reader.onload = (e) => {
-    const products = parseCSV(e.target.result);
-    showImportPreview(products);
-  };
-  reader.readAsText(file);
-}
+    const workbook  = XLSX.read(e.target.result, { type: 'array' });
+    const sheet     = workbook.Sheets['Productos'];
+    const rows      = XLSX.utils.sheet_to_json(sheet);
 
+    // Auto-assign codes
+    const parsed = rows.map(row => ({
+      code:  String(nextCode++),
+      name:  row['Name']  || row['name']  || '',
+      price: row['Price'] || row['price'] || 0,
+      stock: row['Stock'] || row['stock'] || 0
+    }));
+
+    showImportPreview(parsed);
+  };
+  reader.readAsArrayBuffer(file);
+}
 // ── Show preview before confirming import ──
 function showImportPreview(products) {
   let html = `
