@@ -29,12 +29,13 @@ async function handleImportFile(event) {
     const rows      = XLSX.utils.sheet_to_json(sheet);
 
     // Auto-assign codes
-    const parsed = rows.map(row => ({
-      code:  String(nextCode++),
-      name:  row['Name']  || row['name']  || '',
-      price: row['Price'] || row['price'] || 0,
-      stock: row['Stock'] || row['stock'] || 0
-    }));
+  const parsed = rows.map(row => ({
+  code:  String(nextCode++),
+  name:  row['Name']  || row['name']  || '',
+  price: row['Price'] || row['price'] || 0,
+  stock: row['Stock'] || row['stock'] || 0,
+  ref:   row['Ref']   || row['ref']   || ''
+  }));
 
     showImportPreview(parsed);
   };
@@ -62,6 +63,9 @@ function showImportPreview(products) {
         <div style="text-align:right; font-size:12px;">
           <div>$${p.price || '⚠️'}</div>
           <div style="color:#777;">Stock: ${p.stock || 0}</div>
+          <div style="font-size:12px; color:#777;">
+          Código: ${p.code}${p.ref ? ` · Ref: ${p.ref}` : ''}
+          </div>
         </div>
       </div>
     `;

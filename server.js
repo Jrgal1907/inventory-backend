@@ -306,6 +306,15 @@ app.post('/import-products', async (req, res) => {
             continue;
           }
         }
+        // Check if product name already exists for this client
+        const existingByName = await Product.findOne({ 
+        clientId, 
+        name: { $regex: `^${p.name}$`, $options: 'i' } 
+        });
+        if (existingByName) {
+        results.skipped++;
+        continue;
+        }
 
         const newProduct = new Product({
           clientId,

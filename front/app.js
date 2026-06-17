@@ -36,7 +36,7 @@ function renderProduct(data, code) {
 
   document.getElementById('result').innerHTML =
     `<strong style="font-size:18px">${data.name}</strong><br>
-     <span style="color:#777">Código: ${code}</span><br><br>
+     <span style="color:#777">Código: ${code}${data.ref ? ' · Ref: ' + data.ref : ''}</span><br><br>
      💰 Precio: $${data.price}<br>
      📦 Stock: <strong style="color:${stockColor}">${data.stock}</strong><br><br>
      <button onclick="openEdit('${code}', '${data.name}', ${data.price})">✏️ Editar</button>
@@ -266,7 +266,7 @@ async function searchProduct() {
               padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
     <div>
       <div style="font-weight:600;">${p.name}</div>
-      <div style="font-size:12px; color:#777;">${p.code}</div>
+      <div style="font-size:12px; color:#777;">${p.code}${p.ref ? ' · ' + p.ref : ''}</div>
     </div>
     <div style="text-align:right;">
       <div style="font-weight:bold; color:${color};">${p.stock}</div>
@@ -308,7 +308,7 @@ async function getProducts() {
               padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
     <div>
       <div style="font-weight:600;">${p.name}</div>
-      <div style="font-size:12px; color:#777;">${p.code}</div>
+      <div style="font-size:12px; color:#777;">${p.code}${p.ref ? ' · ' + p.ref : ''}</div>
     </div>
     <div style="text-align:right;">
       <div style="font-weight:bold; color:${color};">${p.stock}</div>

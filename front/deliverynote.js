@@ -89,7 +89,7 @@ async function filterDeliveryList() {
                   padding:10px; border-bottom:1px solid #eee; cursor:pointer;">
         <div>
           <div style="font-weight:600;">${p.name}</div>
-          <div style="font-size:12px; color:#777;">${p.code}</div>
+          <div style="font-size:12px; color:#777;">${p.code}${p.ref ? ' · ' + p.ref : ''}</div>
         </div>
         <div style="font-size:12px; color:#333;">Stock: ${p.stock}</div>
       </div>
