@@ -7,6 +7,9 @@ const STATUS = {
   cancelado:    { label: 'Cancelado',    color: '#ff4444', next: [] }
 };
 
+// ── Next steps for notes created before order status existed ──
+const LEGACY_NEXT = ['listo', 'completado', 'cancelado'];
+
 // ── Read-only label for list views ──
 function renderStatusLabel(note) {
   const s = STATUS[note.status] || { label: 'Sin estado', color: '#999' };
@@ -33,10 +36,9 @@ async function updateStatus(id, status) {
 // ── Badge with dropdown of allowed next steps ──
 function renderStatusBadge(note) {
   if (!window.showOrderStatus) return '';
-  if (!STATUS[note.status]) return renderStatusLabel(note);
 
-  const { next } = STATUS[note.status];
-  const options  = next.map(key => `<option value="${key}">${STATUS[key].label}</option>`).join('');
+  const next    = STATUS[note.status] ? STATUS[note.status].next : LEGACY_NEXT;
+  const options = next.map(key => `<option value="${key}">${STATUS[key].label}</option>`).join('');
   const select   = next.length
     ? `<select onchange="updateStatus('${note._id}', this.value)" style="font-size:11px; border:1px solid #ddd; border-radius:6px; padding:2px;">
          <option value="">Cambiar...</option>${options}

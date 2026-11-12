@@ -280,11 +280,15 @@ app.put('/delivery-notes/:id/status', async (req, res) => {
     const note = await DeliveryNote.findOne({ _id: req.params.id, clientId });
     if (!note) return res.status(404).json({ error: 'No encontrada' });
 
-    if (!note.status) {
-      return res.status(400).json({ error: 'Remisión anterior al control de estados' });
+    // Notes created before order status already deducted their full qty:
+    // they can move to listo / completado / cancelado without touching stock again
+    const legacy  = !note.status;
+    const allowed = legacy ? ['listo', 'completado', 'cancelado'] : (FLOW[note.status] || []);
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ error: `No se puede pasar de ${note.status || 'sin estado'} a ${status}` });
     }
-    if (!FLOW[note.status] || !FLOW[note.status].includes(status)) {
-      return res.status(400).json({ error: `No se puede pasar de ${note.status} a ${status}` });
+    if (legacy) {
+      note.items.forEach(item => { item.deducted = item.qty; item.missing = 0; });
     }
 
     if (status === 'alistamiento') await reserveStock(note, clientId);
