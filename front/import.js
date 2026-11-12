@@ -97,7 +97,7 @@ async function confirmImport(products) {
     });
 
     msg.style.color = 'green';
-    msg.innerText   = `✅ ${result.saved} guardados · ${result.skipped} duplicados omitidos`;
+    msg.innerText   = `✅ ${result.saved} nuevos · ${result.updated} actualizados`;
     document.getElementById('import-preview').innerHTML = '';
     document.getElementById('importFile').value = '';
 

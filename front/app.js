@@ -356,6 +356,7 @@ async function saveProduct() {
   const code  = document.getElementById('inputCodigo').value.trim();
   const name  = document.getElementById('inputNombre').value.trim();
   const price = document.getElementById('inputPrecio').value.trim();
+  const ref   = document.getElementById('inputRef').value.trim();
   const stock = document.getElementById('inputStock').value.trim() || '0';
   const msg   = document.getElementById('msgFormulario');
 
@@ -378,12 +379,13 @@ async function saveProduct() {
 
   try {
     const data = await postData(`${API}/add-product`, {
-      code,
-      name,
-      price: Number(price),
-      stock: Number(stock),
-      clientId: getClientId()
-    });
+  code,
+  name,
+  price:    Number(price),
+  stock:    Number(stock),
+  ref:      ref,
+  clientId: getClientId()
+  });
 
     if (data.error) {
       msg.style.color = 'red';
@@ -402,6 +404,7 @@ async function saveProduct() {
     document.getElementById('inputNombre').value = '';
     document.getElementById('inputPrecio').value = '';
     document.getElementById('inputStock').value  = '';
+    document.getElementById('inputRef').value = '';
     document.getElementById('inputCodigo').value = Number(code) + 1;
 
   } catch {
