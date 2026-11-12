@@ -27,6 +27,13 @@ function removeFromCart(code) {
   renderCart();
 }
 
+// ── Update qty in cart and show how many units are missing ──
+function setCartQty(code, value) {
+  cart[code].qty = parseInt(value) || 1;
+  const missing  = Math.max(0, cart[code].qty - cart[code].stock);
+  document.getElementById(`missing-${code}`).innerText = missing ? `Faltan ${missing}` : '';
+}
+
 // ── Render cart with quantity and price inputs ──
 function renderCart() {
   const items = Object.entries(cart);
@@ -43,11 +50,14 @@ function renderCart() {
   items.forEach(([code, item]) => {
     html += `
       <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eee;">
-        <div style="font-size:13px; font-weight:600;">${item.name}</div>
+        <div>
+          <div style="font-size:13px; font-weight:600;">${item.name}</div>
+          <div id="missing-${code}" style="font-size:11px; color:#ff4444;">${item.qty > item.stock ? `Faltan ${item.qty - item.stock}` : ''}</div>
+        </div>
         <div style="display:flex; align-items:center; gap:6px;">
-          <input type="number" min="1" max="${item.stock}" value="${item.qty}"
+          <input type="number" min="1" value="${item.qty}"
                  id="qty-${code}"
-                 onchange="cart['${code}'].qty = parseInt(this.value) || 1"
+                 onchange="setCartQty('${code}', this.value)"
                  style="width:55px; padding:4px; border:1px solid #007bff; border-radius:6px; text-align:center;">
           <input type="number" value="${item.price}"
                  id="price-${code}"
@@ -198,38 +208,25 @@ async function generateDeliveryNote() {
   const recipient = document.getElementById('remisionDestinatario').value || 'Sin especificar';
   const address   = document.getElementById('remisionDireccion').value;
 
-  // Read qty and price from inputs, validate stock
-  let hasError = false;
+  // Read qty and price from inputs (no stock validation: orders can exceed stock)
   Object.entries(cart).forEach(([code, item]) => {
     const inputQty   = document.getElementById(`qty-${code}`);
     const inputPrice = document.getElementById(`price-${code}`);
     if (inputQty)   item.qty   = parseInt(inputQty.value)     || 1;
     if (inputPrice) item.price = parseFloat(inputPrice.value) || item.price;
-
-    if (item.qty > item.stock) {
-      alert(`Stock insuficiente para ${item.name}. Máximo: ${item.stock}`);
-      item.qty = item.stock;
-      if (inputQty) inputQty.value = item.stock;
-      hasError = true;
-    }
   });
-  if (hasError) return;
 
   // Get consecutive number
   const numberRes      = await postData(`${API}/next-delivery-number`, { clientId: getClientId() });
   const deliveryNumber = numberRes.number;
-
-  // Discount stock
-  for (const [code, item] of Object.entries(cart)) {
-    await updateStockAPI(code, -item.qty);
-  }
 
   // Build items and total
   let total = 0;
   const noteItems = Object.entries(cart).map(([code, item]) => {
     const subtotal = item.qty * item.price;
     total += subtotal;
-    return { code, name: item.name, qty: item.qty, price: item.price, subtotal };
+    return { code, name: item.name, qty: item.qty, price: item.price, subtotal,
+             missing: Math.max(0, item.qty - item.stock) };
   });
 
   // Save to database
@@ -239,7 +236,8 @@ async function generateDeliveryNote() {
     recipient,
     address,
     items:    noteItems,
-    total
+    total,
+    instant:  !getFeatures().orderStatus
   });
 
   // Reset
@@ -274,6 +272,7 @@ async function openHistory() {
              onclick="showNoteDetail('${note._id}')">
           <div style="font-weight:600;">${note.recipient}</div>
           <div style="font-size:12px; color:#777;">${note.number} · ${date} · $${note.total}</div>
+          ${window.showOrderStatus ? renderStatusLabel(note) : ''}
         </div>
       `;
     });
@@ -299,6 +298,7 @@ async function showNoteDetail(id) {
         <button onclick="openHistory()" style="margin-bottom:16px;">← Volver</button>
         <h4>${note.number} · ${note.recipient}</h4>
         <div style="font-size:13px; color:#777; margin-bottom:12px;">${date}${note.address ? ' · ' + note.address : ''}</div>
+        <div style="margin-bottom:12px;">${renderStatusBadge(note)}</div>
     `;
 
     note.items.forEach(item => {
@@ -307,6 +307,7 @@ async function showNoteDetail(id) {
           <div>
             <div style="font-weight:600; font-size:13px;">${item.name}</div>
             <div style="font-size:12px; color:#777;">x${item.qty} · $${item.price}</div>
+            ${item.missing ? `<div style="font-size:12px; color:#ff4444;">Faltan ${item.missing}</div>` : ''}
           </div>
           <div style="font-weight:600;">$${item.subtotal}</div>
         </div>

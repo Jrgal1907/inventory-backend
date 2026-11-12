@@ -67,6 +67,7 @@ function applyFlags(features) {
   const shownotes = features.remisiones ? 'inline-block' : 'none';
   document.getElementById('btnDeliveryNote').style.display = shownotes;
   document.getElementById('btnHistory').style.display      = shownotes;
+  window.showOrderStatus = !!features.orderStatus;
 }
 
 // ── Login transaction ──

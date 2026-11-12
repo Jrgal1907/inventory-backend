@@ -25,7 +25,8 @@ const User = mongoose.model('User', {
   clientId: String,
   logoUrl:  String,
   features: {
-    remisiones: { type: Boolean, default: false }
+    remisiones:  { type: Boolean, default: false },
+    orderStatus: { type: Boolean, default: false }
   }
 });
 //  EXPRESS SERVER
@@ -217,25 +218,90 @@ const DeliveryNote = mongoose.model('DeliveryNote', {
   date:        { type: Date, default: Date.now },
   recipient:   String,
   address:     String,
+  status:      String,  // no default on purpose: notes created before this feature have no status
   items: [{
     code:     String,
     name:     String,
     qty:      Number,
     price:    Number,
-    subtotal: Number
+    subtotal: Number,
+    missing:  { type: Number, default: 0 },
+    deducted: { type: Number, default: 0 }
   }],
   total: Number
 });
+// Deduct only what is available and record what is missing
+async function reserveStock(note, clientId) {
+  for (const item of note.items) {
+    const product = await Product.findOne({ clientId, code: item.code });
+    if (!product) {
+      item.deducted = 0;
+      item.missing  = item.qty;
+      continue;
+    }
+    const take = Math.min(item.qty, product.stock);
+    product.stock -= take;
+    item.deducted  = take;
+    item.missing   = item.qty - take;
+    await product.save();
+  }
+}
+
 //delivery note endpoint
 app.post('/delivery-notes', async (req, res) => {
-  const { clientId,number ,recipient, address, items, total } = req.body;
+  const { clientId, number, recipient, address, items, total, instant } = req.body;
 
   try {
-    const note = new DeliveryNote({ clientId, number ,recipient, address, items, total });
+    const note = new DeliveryNote({
+      clientId, number, recipient, address, items, total,
+      status: instant ? 'completado' : 'pendiente'
+    });
+    // Clients without order status keep the old behavior: stock leaves on creation
+    if (instant) await reserveStock(note, clientId);
     await note.save();
     res.json({ message: 'Remisión guardada', note });
   } catch (err) {
     res.status(500).json({ error: 'Error guardando remisión' });
+  }
+});
+
+// Allowed status transitions
+const FLOW = {
+  pendiente:    ['alistamiento', 'cancelado'],
+  alistamiento: ['listo', 'cancelado'],
+  listo:        ['completado', 'cancelado'],
+  completado:   [],
+  cancelado:    []
+};
+
+app.put('/delivery-notes/:id/status', async (req, res) => {
+  const { status, clientId } = req.body;
+  try {
+    const note = await DeliveryNote.findOne({ _id: req.params.id, clientId });
+    if (!note) return res.status(404).json({ error: 'No encontrada' });
+
+    if (!note.status) {
+      return res.status(400).json({ error: 'Remisión anterior al control de estados' });
+    }
+    if (!FLOW[note.status] || !FLOW[note.status].includes(status)) {
+      return res.status(400).json({ error: `No se puede pasar de ${note.status} a ${status}` });
+    }
+
+    if (status === 'alistamiento') await reserveStock(note, clientId);
+
+    if (status === 'cancelado') {
+      for (const item of note.items) {
+        if (!item.deducted) continue;
+        await Product.updateOne({ clientId, code: item.code }, { $inc: { stock: item.deducted } });
+        item.deducted = 0;
+      }
+    }
+
+    note.status = status;
+    await note.save();
+    res.json(note);
+  } catch (err) {
+    res.status(500).json({ error: 'Error actualizando estado' });
   }
 });
 
