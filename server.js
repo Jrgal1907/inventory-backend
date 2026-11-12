@@ -309,6 +309,62 @@ app.put('/delivery-notes/:id/status', async (req, res) => {
   }
 });
 
+// Edit an open order (sin estado, pendiente or alistamiento)
+app.put('/delivery-notes/:id', async (req, res) => {
+  const { clientId, recipient, address, items } = req.body;
+
+  if (!Array.isArray(items) || !items.length) {
+    return res.status(400).json({ error: 'El pedido necesita al menos un producto' });
+  }
+
+  try {
+    const note = await DeliveryNote.findOne({ _id: req.params.id, clientId });
+    if (!note) return res.status(404).json({ error: 'No encontrada' });
+
+    const legacy   = !note.status;
+    const reserved = legacy || note.status === 'alistamiento';  // stock already deducted
+    if (!reserved && note.status !== 'pendiente') {
+      return res.status(400).json({ error: `No se puede editar un pedido en estado ${note.status}` });
+    }
+
+    // Give back what this order had deducted, then deduct again with the new quantities
+    if (reserved) {
+      for (const item of note.items) {
+        const returned = legacy ? item.qty : item.deducted;
+        if (!returned) continue;
+        await Product.updateOne({ clientId, code: item.code }, { $inc: { stock: returned } });
+      }
+    }
+
+    const newItems = [];
+    for (const i of items) {
+      const qty   = parseInt(i.qty) || 1;
+      const price = Number(i.price) || 0;
+      let missing = 0;
+      if (!reserved) {
+        const p = await Product.findOne({ clientId, code: i.code });
+        missing = Math.max(0, qty - (p ? p.stock : 0));
+      }
+      newItems.push({ code: i.code, name: i.name, qty, price, subtotal: qty * price, missing, deducted: 0 });
+    }
+
+    note.items     = newItems;
+    note.total     = newItems.reduce((sum, i) => sum + i.subtotal, 0);
+    note.recipient = recipient || note.recipient;
+    note.address   = address;
+
+    if (reserved) {
+      await reserveStock(note, clientId);
+      note.status = 'alistamiento';  // a legacy note is now tracked like any other
+    }
+
+    await note.save();
+    res.json(note);
+  } catch (err) {
+    res.status(500).json({ error: 'Error editando pedido' });
+  }
+});
+
 app.get('/delivery-notes', async (req, res) => {
   const { clientId } = req.query;
   try {
